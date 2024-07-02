@@ -9,7 +9,7 @@ public sealed class CosName : ICosPrimitive, IEquatable<CosName>
 
     public CosName(string value)
     {
-        Value = value.TrimStart('/') ?? throw new ArgumentNullException(nameof(value));
+        Value = value.TrimStart('/');
     }
 
     public bool Equals(CosName? other)
@@ -61,6 +61,6 @@ public sealed class CosNameComparer : IEqualityComparer<CosName>
 
     public int GetHashCode(CosName obj)
     {
-        return obj.Value.GetHashCode();
+        return obj.Value.GetHashCode(StringComparison.Ordinal);
     }
 }

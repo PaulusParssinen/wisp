@@ -18,7 +18,7 @@ public sealed class CosHeaderReader
                 throw new WispException("PDF file is missing header");
             }
 
-            var versionNumber = text.Substring(index + 5, 3);
+            var versionNumber = text.AsSpan(index + 5, 3);
             return versionNumber switch
             {
                 "1.0" => PdfVersion.Pdf1_0,

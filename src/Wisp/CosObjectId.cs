@@ -3,8 +3,6 @@ namespace Wisp;
 [DebuggerDisplay("{ToString(),nq}")]
 public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, IComparable<CosObjectId>
 {
-    private static readonly char[] _separator = [':'];
-
     public int Number { get; set; }
     public int Generation { get; set; }
 
@@ -18,7 +16,7 @@ public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, ICompa
 
     public static CosObjectId Parse(string text)
     {
-        var parts = text.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
+        var parts = text.Split(':', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 2)
         {
             return new CosObjectId(

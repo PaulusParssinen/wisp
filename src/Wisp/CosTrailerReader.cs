@@ -2,7 +2,7 @@ namespace Wisp;
 
 public static class CosTrailerReader
 {
-    private static readonly byte[] _marker = [0x73, 0x74, 0x61, 0x72, 0x74, 0x78, 0x72, 0x65, 0x66];
+    private static ReadOnlySpan<byte> Marker => [0x73, 0x74, 0x61, 0x72, 0x74, 0x78, 0x72, 0x65, 0x66];
 
     public static (CosXRefTable Table, CosTrailer Trailer) Read(CosParser parser)
     {
@@ -59,7 +59,7 @@ public static class CosTrailerReader
         while (parser.CanRead)
         {
             var current = parser.ReadByte();
-            if (current == _marker[index])
+            if (current == Marker[index])
             {
                 index++;
             }
@@ -68,7 +68,7 @@ public static class CosTrailerReader
                 index = 0;
             }
 
-            if (index == _marker.Length)
+            if (index == Marker.Length)
             {
                 var obj = parser.Parse();
                 if (obj is not CosInteger integer)

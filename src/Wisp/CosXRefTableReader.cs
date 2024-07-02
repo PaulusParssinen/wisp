@@ -1,4 +1,4 @@
-﻿namespace Wisp;
+namespace Wisp;
 
 public static class CosXRefTableReader
 {
