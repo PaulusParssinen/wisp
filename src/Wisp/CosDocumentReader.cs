@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public static class CosDocumentReader
 {
     public static CosDocument Read(Stream stream, CosReaderSettings? settings = null)

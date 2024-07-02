@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public sealed class CosParser : IDisposable
 {
     private readonly CosLexer _lexer;

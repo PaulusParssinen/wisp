@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public sealed class CosXRefTable : IEnumerable<CosXRef>
 {
     private readonly Dictionary<CosObjectId, CosXRef> _lookup;

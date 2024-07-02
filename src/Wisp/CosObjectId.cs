@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [DebuggerDisplay("{ToString(),nq}")]
 public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, IComparable<CosObjectId>
 {
@@ -83,7 +82,6 @@ public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, ICompa
     }
 }
 
-[PublicAPI]
 public sealed class CosObjectIdComparer : IEqualityComparer<CosObjectId>
 {
     public static CosObjectIdComparer Shared { get; } = new();

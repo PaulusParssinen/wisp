@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class CcittFaxFilter : Filter
 {
     public override string Name { get; } = "CCITTFaxDecode";

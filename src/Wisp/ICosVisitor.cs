@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public interface ICosVisitor<in TContext>
 {
     void VisitArray(CosArray obj, TContext context);
@@ -20,7 +19,6 @@ public interface ICosVisitor<in TContext>
     void VisitString(CosString obj, TContext context);
 }
 
-[PublicAPI]
 public interface ICosVisitor<in TContext, out TResult>
 {
     TResult VisitArray(CosArray obj, TContext context);

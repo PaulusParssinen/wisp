@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class CryptFilter : Filter
 {
     public override string Name { get; } = "Crypt";

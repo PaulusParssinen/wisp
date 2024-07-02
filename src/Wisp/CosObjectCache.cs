@@ -146,7 +146,6 @@ internal sealed class CosObjectCache : ICosObjectCache
 }
 
 [Flags]
-[PublicAPI]
 public enum CosResolveFlags
 {
     None = 0,
@@ -172,7 +171,6 @@ public enum CosResolveFlags
     NoResolve = 1 << 2,
 }
 
-[PublicAPI]
 public interface ICosObjectCache : IEnumerable<CosObject>
 {
     bool Contains(CosObjectId id);
@@ -180,7 +178,6 @@ public interface ICosObjectCache : IEnumerable<CosObject>
     void Set(CosObject obj);
 }
 
-[PublicAPI]
 public static class ICosObjectCacheExtensions
 {
     public static CosObject? Get(this ICosObjectCache collection, int number, int generation, CosResolveFlags flags = CosResolveFlags.None)

@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public interface ICosVisitable
 {
     [DebuggerStepThrough]

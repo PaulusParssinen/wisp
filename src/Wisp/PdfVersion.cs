@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum PdfVersion
 {
@@ -14,7 +13,6 @@ public enum PdfVersion
     Pdf1_7,
 }
 
-[PublicAPI]
 public static class PdfVersionExtension
 {
     public static string ToVersionString(this PdfVersion version)

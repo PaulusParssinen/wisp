@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [DebuggerDisplay("{ToString(),nq}")]
 public sealed class CosObjectStream : ICosPrimitive
 {

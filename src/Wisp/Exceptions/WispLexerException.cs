@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public class WispLexerException : WispException
 {
     public long Position { get; }

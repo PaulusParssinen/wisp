@@ -6,10 +6,10 @@ public static class CosDocumentWriter
     {
         // We explicitly set 1.6 since we're currently saving
         // the xref table as a xref stream.
-        writer.WriteLiteral("%PDF-1.6\n");
-        writer.WriteLiteral("%");
+        writer.WriteBytes("%PDF-1.6\n"u8);
+        writer.WriteBytes("%"u8);
         writer.WriteBytes([128, 129, 130, 131]);
-        writer.WriteLiteral("\n");
+        writer.WriteBytes("\n"u8);
 
         // Create a copy of the xref table since
         // we might have to manipulate it a bit
@@ -59,8 +59,8 @@ public static class CosDocumentWriter
 
         // Write the end of the file
         writer.WriteByte('\n');
-        writer.WriteLiteral("startxref\n");
+        writer.WriteBytes("startxref\n"u8);
         writer.WriteLiteral(start);
-        writer.WriteLiteral("\n%%EOF\n");
+        writer.WriteBytes("\n%%EOF\n"u8);
     }
 }

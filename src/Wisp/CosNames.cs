@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public static class CosNames
 {
     public static CosName Author { get; } = new("Author");

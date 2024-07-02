@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public sealed class CosInfo : CosObjectReference<CosDictionary>
 {
     /// <summary>

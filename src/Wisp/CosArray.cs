@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [DebuggerDisplay("{ToString(),nq}")]
 public sealed class CosArray : ICosPrimitive, IEnumerable<ICosPrimitive>
 {
@@ -70,7 +69,6 @@ public sealed class CosArray : ICosPrimitive, IEnumerable<ICosPrimitive>
     }
 }
 
-[PublicAPI]
 public static class CosArrayExtensions
 {
     public static CosInteger? GetIntegerAt(this CosArray array, int index)

@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public sealed class CosWriterSettings
 {
     public CosCompression Compression { get; set; } = CosCompression.Optimal;

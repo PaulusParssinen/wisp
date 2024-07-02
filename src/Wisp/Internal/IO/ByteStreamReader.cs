@@ -1,8 +1,8 @@
 namespace Wisp.Internal;
 
-internal sealed class ByteStreamReader : IByteStreamReader
+internal sealed class ByteStreamReader
 {
-    private readonly ReadOnlyMemory<byte> _buffer;
+    private readonly byte[] _buffer;
     private int _position;
 
     public bool CanRead => _position < _buffer.Length;
@@ -13,12 +13,8 @@ internal sealed class ByteStreamReader : IByteStreamReader
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        _buffer = new ReadOnlyMemory<byte>(ReadAllBytes(stream));
+        _buffer = ReadAllBytes(stream);
         _position = 0;
-    }
-
-    public void Dispose()
-    {
     }
 
     public int PeekByte()
@@ -28,8 +24,10 @@ internal sealed class ByteStreamReader : IByteStreamReader
             return -1;
         }
 
-        return _buffer.Span[_position];
+        return _buffer[_position];
     }
+
+    public char PeekChar() => (char)PeekByte();
 
     public int ReadByte()
     {
@@ -42,6 +40,8 @@ internal sealed class ByteStreamReader : IByteStreamReader
         return result;
     }
 
+    public char ReadChar() => (char)ReadByte();
+
     public ReadOnlySpan<byte> ReadBytes(int count)
     {
         if (_position + count > _buffer.Length)
@@ -49,7 +49,7 @@ internal sealed class ByteStreamReader : IByteStreamReader
             throw new WispException("Exceeded stream end");
         }
 
-        var result = _buffer.Slice(_position, count).Span;
+        var result = _buffer.AsSpan(_position, count);
         _position += count;
 
         return result;
@@ -86,5 +86,16 @@ internal sealed class ByteStreamReader : IByteStreamReader
         using var output = new MemoryStream();
         stream.CopyTo(output);
         return output.ToArray();
+    }
+
+    public void Consume() => ReadByte();
+
+    public void Consume(char expected)
+    {
+        var read = ReadByte();
+        if (read != expected)
+        {
+            throw new WispException($"Expected '{expected}' but got '{read}'.");
+        }
     }
 }

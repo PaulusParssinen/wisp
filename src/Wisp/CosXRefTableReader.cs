@@ -1,6 +1,5 @@
 ﻿namespace Wisp;
 
-[PublicAPI]
 public static class CosXRefTableReader
 {
     public static (CosXRefTable XRefTable, CosDictionary Trailer) Read(CosParser parser)

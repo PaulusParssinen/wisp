@@ -1,6 +1,8 @@
+using System.Runtime.InteropServices;
+using System.Text;
+
 namespace Wisp;
 
-[PublicAPI]
 public sealed class CosWriter : IDisposable
 {
     private readonly Stream _stream;
@@ -35,25 +37,25 @@ public sealed class CosWriter : IDisposable
         _stream.WriteByte((byte)value);
     }
 
-    public void WriteBytes(byte[] value)
+    public void WriteBytes(ReadOnlySpan<byte> value)
     {
         _stream.Write(value);
     }
 
-    public void WriteLiteral(int value)
+    [SkipLocalsInit]
+    public void WriteLiteral<T>(T value, ReadOnlySpan<char> format = default) where T : unmanaged, IUtf8SpanFormattable
     {
-        WriteLiteral(value.ToString(CultureInfo.InvariantCulture));
-    }
+        // TODO: ..
+        Span<byte> buffer = stackalloc byte[128];
+        if (!value.TryFormat(buffer, out int bytesWritten, format, CultureInfo.InvariantCulture))
+            throw new WispException("Buffer too small for UTF8 formatting");
 
-    public void WriteLiteral(long value)
-    {
-        WriteLiteral(value.ToString(CultureInfo.InvariantCulture));
+        _stream.Write(buffer.Slice(0, bytesWritten));
     }
 
     public void WriteLiteral(string value)
     {
-        var bytes = ByteEncoding.Shared.GetBytes(value);
-        _stream.Write(bytes);
+        _stream.Write(Encoding.UTF8.GetBytes(value));
     }
 
     public void Write(CosDocument owner, ICosPrimitive value)
@@ -92,21 +94,21 @@ public sealed class CosWriter : IDisposable
 
         public override void VisitBoolean(CosBoolean obj, Context context)
         {
-            context.Writer.WriteLiteral(obj.Value ? "true" : "false");
+            context.Writer.WriteBytes(obj.Value ? "true"u8 : "false"u8);
         }
 
         public override void VisitDate(CosDate obj, Context context)
         {
             var timestamp = obj.Value.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             var offset = obj.Value.ToString("zzz", CultureInfo.InvariantCulture);
-            context.Writer.WriteLiteral("(D:");
+            context.Writer.WriteBytes("(D:"u8);
             context.Writer.WriteLiteral(timestamp + offset.Replace(':', '\''));
-            context.Writer.WriteLiteral(")");
+            context.Writer.WriteByte(')');
         }
 
         public override void VisitDictionary(CosDictionary obj, Context context)
         {
-            context.Writer.WriteLiteral("<<");
+            context.Writer.WriteBytes("<<"u8);
             context.Writer.WriteByte('\n');
 
             foreach (var (key, value) in obj)
@@ -117,12 +119,12 @@ public sealed class CosWriter : IDisposable
                 context.Writer.WriteByte('\n');
             }
 
-            context.Writer.WriteLiteral(">>");
+            context.Writer.WriteBytes(">>"u8);
         }
 
         public override void VisitInteger(CosInteger obj, Context context)
         {
-            context.Writer.WriteLiteral(obj.Value.ToString(CultureInfo.InvariantCulture));
+            context.Writer.WriteLiteral(obj.Value);
         }
 
         public override void VisitName(CosName obj, Context context)
@@ -133,12 +135,12 @@ public sealed class CosWriter : IDisposable
 
         public override void VisitNull(CosNull obj, Context context)
         {
-            context.Writer.WriteLiteral("null");
+            context.Writer.WriteBytes("null"u8);
         }
 
         public override void VisitReal(CosReal obj, Context context)
         {
-            context.Writer.WriteLiteral(obj.Value.ToString(CultureInfo.InvariantCulture));
+            context.Writer.WriteLiteral(obj.Value);
         }
 
         public override void VisitHexString(CosHexString obj, Context context)
@@ -158,7 +160,7 @@ public sealed class CosWriter : IDisposable
         public override void VisitObjectReference(CosObjectReference obj, Context context)
         {
             obj.Id.Accept(this, context);
-            context.Writer.WriteLiteral(" R");
+            context.Writer.WriteBytes(" R"u8);
         }
 
         public override void VisitString(CosString obj, Context context)
@@ -173,7 +175,7 @@ public sealed class CosWriter : IDisposable
             context.Writer.WriteBytes(obj.Encoding switch
             {
                 CosStringEncoding.Ascii => Encoding.ASCII.GetBytes(text),
-                CosStringEncoding.Unicode => [..(byte[])[0xFF, 0xFE], .. Encoding.BigEndianUnicode.GetBytes(text)],
+                CosStringEncoding.Unicode => [..(byte[])[0xFF, 0xFE], .. Encoding.Unicode.GetBytes(text)],
                 CosStringEncoding.BigEndianUnicode => [..(byte[])[0xFE, 0xFF], .. Encoding.BigEndianUnicode.GetBytes(text)],
                 _ => throw new WispException("Unknown string encoding"),
             });
@@ -183,9 +185,9 @@ public sealed class CosWriter : IDisposable
         public override void VisitObject(CosObject obj, Context context)
         {
             obj.Id.Accept(this, context);
-            context.Writer.WriteLiteral(" obj\n");
+            context.Writer.WriteBytes(" obj\n"u8);
             obj.Object.Accept(this, context);
-            context.Writer.WriteLiteral("\nendobj");
+            context.Writer.WriteBytes("\nendobj"u8);
         }
 
         public override void VisitStream(CosStream obj, Context context)
@@ -201,9 +203,9 @@ public sealed class CosWriter : IDisposable
 
             obj.Dictionary.Accept(this, context);
             context.Writer.WriteByte('\n');
-            context.Writer.WriteLiteral("stream\n");
+            context.Writer.WriteBytes("stream\n"u8);
             context.Writer.WriteBytes(obj.GetData());
-            context.Writer.WriteLiteral("\nendstream");
+            context.Writer.WriteBytes("\nendstream"u8);
         }
 
         public override void VisitObjectStream(CosObjectStream obj, Context context)

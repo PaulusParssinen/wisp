@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public abstract class Filter
 {
     public abstract string Name { get; }

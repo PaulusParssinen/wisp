@@ -31,21 +31,10 @@ internal static class CharExtensions
         return character is not ('<' or '>' or '/' or '[' or ']' or '(' or ')');
     }
 
-    public static bool IsPdfLineBreak(this char character)
-    {
-        switch (character)
-        {
-            case '\n': // 0x0A
-            case '\r': // 0x0D
-                return true;
-            default:
-                return false;
-        }
-    }
+    public static bool IsPdfLineBreak(this char character) => character is '\n' or '\r';
 
-    public static bool IsPdfSolidus(this char character)
-    {
-        // Solidus is the '/' character.
-        return character == 0x2F;
-    }
+    /// <summary>
+    /// Checks if the given character is solidus (<c>'/'</c>).
+    /// </summary>
+    public static bool IsPdfSolidus(this char character) => character == 0x2F;
 }

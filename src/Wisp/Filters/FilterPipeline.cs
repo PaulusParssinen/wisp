@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class FilterPipeline
 {
     private readonly List<Filter> _filters;

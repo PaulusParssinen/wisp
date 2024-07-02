@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class AsciiHexFilter : Filter
 {
     public override string Name { get; } = "ASCIIHexDecode";

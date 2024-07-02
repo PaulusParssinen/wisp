@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [DebuggerDisplay("{ToString(),nq}")]
 public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, ICosPrimitive>>
 {
@@ -129,7 +128,6 @@ public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, IC
     }
 }
 
-[PublicAPI]
 public static class PdfDictionaryExtensions
 {
     public static CosInteger? GetInteger(this CosDictionary dictionary, CosName key)

@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public enum CosStringEncoding
 {
     Ascii = 0,

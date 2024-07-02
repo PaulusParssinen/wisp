@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 [DebuggerDisplay("{ToString(),nq}")]
 public class CosObjectReference : ICosPrimitive, IEquatable<CosObjectReference>
 {
@@ -61,7 +60,6 @@ public class CosObjectReference : ICosPrimitive, IEquatable<CosObjectReference>
     }
 }
 
-[PublicAPI]
 public class CosObjectReference<T> : CosObjectReference
     where T : class, ICosPrimitive
 {
@@ -83,7 +81,6 @@ public class CosObjectReference<T> : CosObjectReference
     }
 }
 
-[PublicAPI]
 public sealed class CosObjectReferenceComparer : IEqualityComparer<CosObjectReference>
 {
     public static CosObjectReferenceComparer Shared { get; } = new();

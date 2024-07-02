@@ -1,6 +1,5 @@
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class Ascii85Filter : Filter
 {
     public override string Name { get; } = "ASCII85Decode";

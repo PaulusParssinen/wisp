@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public class WispException : Exception
 {
     internal WispException(string? message)

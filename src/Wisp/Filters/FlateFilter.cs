@@ -2,7 +2,6 @@ using System.IO.Compression;
 
 namespace Wisp.Filters;
 
-[PublicAPI]
 public sealed class FlateFilter : Filter
 {
     public override string Name { get; } = "FlateDecode";
@@ -32,7 +31,7 @@ public sealed class FlateFilter : Filter
         using (var output = new MemoryStream())
         {
             // Write the flate header
-            output.Write(new byte[] { 120, 156 });
+            output.Write([120, 156]); // TODO: I think we may be able to ZLibStream directly.
 
             var level = compression switch
             {

@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[PublicAPI]
 public abstract class CosVisitor<TContext> : ICosVisitor<TContext>
 {
     public virtual void VisitArray(CosArray obj, TContext context)
@@ -85,7 +84,6 @@ public abstract class CosVisitor<TContext> : ICosVisitor<TContext>
     }
 }
 
-[PublicAPI]
 public abstract class CosVisitor<TContext, TResult> : ICosVisitor<TContext, TResult>
 {
     public abstract TResult VisitArray(CosArray obj, TContext context);
