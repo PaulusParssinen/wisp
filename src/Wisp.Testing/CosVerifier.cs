@@ -6,10 +6,7 @@ public static class CosVerifier
         CosDocument model,
         CosSerializerSettings? settings = null)
     {
-        if (model is null)
-        {
-            throw new ArgumentNullException(nameof(model));
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
         settings ??= new CosSerializerSettings();
         var output = CosSerializer.Serialize(model, settings);

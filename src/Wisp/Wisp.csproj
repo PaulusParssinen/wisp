@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <None Include="../../resources/wisp.png" Pack="true" PackagePath="\" Link="Properties/wisp.png" />
-    <AdditionalFiles Include="../stylecop.json" Link="Properties/stylecop.json" />
   </ItemGroup>
 
 </Project>

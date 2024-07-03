@@ -2,11 +2,11 @@ namespace Wisp.Filters;
 
 public sealed class FilterPipeline
 {
-    private readonly List<Filter> _filters;
+    private readonly List<IFilter> _filters;
 
-    public FilterPipeline(IEnumerable<Filter>? filters)
+    public FilterPipeline(IEnumerable<IFilter>? filters)
     {
-        _filters = new List<Filter>(filters ?? Enumerable.Empty<Filter>());
+        _filters = new List<IFilter>(filters ?? Enumerable.Empty<IFilter>());
     }
 
     public byte[] Decode(byte[] data, CosDictionary? parameters)
@@ -37,7 +37,7 @@ public sealed class FilterPipeline
 
     internal static class Factory
     {
-        private static readonly Dictionary<string, Filter> _filters = new(StringComparer.Ordinal)
+        private static readonly Dictionary<string, IFilter> _filters = new(StringComparer.Ordinal)
         {
             { "ASCIIHexDecode", new AsciiHexFilter() },
             { "ASCII85Decode", new Ascii85Filter() },
@@ -64,12 +64,12 @@ public sealed class FilterPipeline
                 };
             }
 
-            return new FilterPipeline(Array.Empty<Filter>());
+            return new FilterPipeline(Array.Empty<IFilter>());
         }
 
         private static FilterPipeline CreateFilterPipeline(CosArray filters)
         {
-            var result = new List<Filter>();
+            var result = new List<IFilter>();
 
             foreach (var filter in filters)
             {
@@ -84,7 +84,7 @@ public sealed class FilterPipeline
             return new FilterPipeline(result);
         }
 
-        private static Filter CreateFilter(CosName filterName)
+        private static IFilter CreateFilter(CosName filterName)
         {
             if (_filters.TryGetValue(filterName.Value, out var filter))
             {

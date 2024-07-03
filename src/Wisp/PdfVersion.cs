@@ -1,6 +1,5 @@
 namespace Wisp;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum PdfVersion
 {
     Pdf1_0,

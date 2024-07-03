@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public abstract class Filter
+public interface IFilter
 {
-    public abstract string Name { get; }
-    public virtual bool Supported { get; } = true;
+    string Name { get; }
+    bool Supported { get; }
 
-    public abstract byte[] Decode(byte[] data, CosDictionary? parameters);
+    byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters);
 
     public static byte[] Decode(CosStream stream, byte[] data)
     {

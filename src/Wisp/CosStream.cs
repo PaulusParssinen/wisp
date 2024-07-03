@@ -31,7 +31,7 @@ public sealed class CosStream : ICosPrimitive
     {
         if (Dictionary.ContainsKey(CosNames.Filter))
         {
-            return Filter.Decode(this, _data);
+            return IFilter.Decode(this, _data);
         }
 
         return _data;
@@ -53,7 +53,7 @@ public sealed class CosStream : ICosPrimitive
     {
         if (Dictionary.ContainsKey(CosNames.Filter))
         {
-            _data = Filter.Decode(this, _data);
+            _data = IFilter.Decode(this, _data);
 
             Dictionary.Set(CosNames.Filter, null);
             Dictionary.Set(CosNames.DecodeParms, null);
@@ -81,8 +81,5 @@ public sealed class CosStream : ICosPrimitive
         return visitor.VisitStream(this, context);
     }
 
-    public override string ToString()
-    {
-        return $"[Stream] Length = {Length}";
-    }
+    public override string ToString() => $"[Stream] Length = {Length}";
 }

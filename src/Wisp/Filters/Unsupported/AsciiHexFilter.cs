@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class AsciiHexFilter : Filter
+public sealed class AsciiHexFilter : IFilter
 {
-    public override string Name { get; } = "ASCIIHexDecode";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "ASCIIHexDecode";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }

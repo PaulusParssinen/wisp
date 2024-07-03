@@ -2,11 +2,13 @@ using System.IO.Compression;
 
 namespace Wisp.Filters;
 
-public sealed class FlateFilter : Filter
+public sealed class FlateFilter : IFilter
 {
-    public override string Name { get; } = "FlateDecode";
+    public string Name { get; } = "FlateDecode";
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public bool Supported => true;
+
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         // Run the deflate algorithm
         var bytes = Deflate(data);
@@ -51,7 +53,7 @@ public sealed class FlateFilter : Filter
         }
     }
 
-    private static byte[] Deflate(byte[] data)
+    private static unsafe byte[] Deflate(ReadOnlySpan<byte> data)
     {
         if (data.Length < 2)
         {
@@ -59,17 +61,12 @@ public sealed class FlateFilter : Filter
         }
 
         var output = new MemoryStream();
-        using (var input = new MemoryStream(data))
+        fixed (byte* dataPtr = data)
         {
-            // The deflate stream does not support the
-            // header, so just consume the first two bytes.
-            input.ReadByte();
-            input.ReadByte();
+            using var inputStream = new UnmanagedMemoryStream(dataPtr, data.Length);
+            using var zlibStream = new ZLibStream(inputStream, CompressionMode.Decompress);
 
-            using (var decoder = new DeflateStream(input, CompressionMode.Decompress))
-            {
-                decoder.CopyTo(output);
-            }
+            zlibStream.CopyTo(output);
         }
 
         return output.ToArray();
@@ -88,72 +85,76 @@ public sealed class FlateFilter : Filter
 
     private static class PngDecoder
     {
-        public static byte[] Decode(byte[] bytes, int columns, int colors, int bitsPerComponent)
+        public static unsafe byte[] Decode(ReadOnlySpan<byte> bytes, int columns, int colors, int bitsPerComponent)
         {
             var bytesPerRow = ((colors * columns * bitsPerComponent) + 7) / 8;
 
-            var reader = new BinaryReader(new MemoryStream(bytes));
-            var writer = new MemoryStream(bytes.Length);
-
-            var previous = default(byte[]);
-
-            while (true)
+            fixed (byte* bytesPtr = bytes)
             {
-                var filter = reader.Read();
-                if (filter < 0)
-                {
-                    return writer.ToArray();
-                }
+                using var inputStream = new UnmanagedMemoryStream(bytesPtr, bytes.Length);
+                using var reader = new BinaryReader(inputStream);
+                var writer = new MemoryStream(bytes.Length);
 
-                var current = new byte[bytesPerRow];
-                ReadBytes(reader, current, bytesPerRow);
+                var previous = default(byte[]);
 
-                if (filter == 0)
+                while (true)
                 {
-                    // NONE
-                }
-                else if (filter == 1)
-                {
-                    // SUB
-                    throw new WispException("Unsupported filter: PngSub");
-                }
-                else if (filter == 2)
-                {
-                    // UP
-                    if (previous != null)
+                    var filter = reader.Read();
+                    if (filter < 0)
                     {
-                        for (var i = 0; i < bytesPerRow; i++)
+                        return writer.ToArray();
+                    }
+
+                    var current = new byte[bytesPerRow];
+                    ReadBytes(reader, current, bytesPerRow);
+
+                    if (filter == 0)
+                    {
+                        // NONE
+                    }
+                    else if (filter == 1)
+                    {
+                        // SUB
+                        throw new WispException("Unsupported filter: PngSub");
+                    }
+                    else if (filter == 2)
+                    {
+                        // UP
+                        if (previous != null)
                         {
-                            current[i] += previous[i];
+                            for (var i = 0; i < bytesPerRow; i++)
+                            {
+                                current[i] += previous[i];
+                            }
                         }
                     }
-                }
-                else if (filter == 3)
-                {
-                    // AVERAGE
-                    throw new WispException("Unsupported filter: PngAverage");
-                }
-                else if (filter == 4)
-                {
-                    // PAETH
-                    throw new WispException("Unsupported filter: PngPaeth");
-                }
-                else if (filter == 5)
-                {
-                    // PAETH
-                    throw new WispException("Unsupported filter: PngOptimum");
-                }
-                else
-                {
-                    // UNKNOWN
-                    throw new WispException("Encountered unknown PNG filter during decoding");
-                }
+                    else if (filter == 3)
+                    {
+                        // AVERAGE
+                        throw new WispException("Unsupported filter: PngAverage");
+                    }
+                    else if (filter == 4)
+                    {
+                        // PAETH
+                        throw new WispException("Unsupported filter: PngPaeth");
+                    }
+                    else if (filter == 5)
+                    {
+                        // PAETH
+                        throw new WispException("Unsupported filter: PngOptimum");
+                    }
+                    else
+                    {
+                        // UNKNOWN
+                        throw new WispException("Encountered unknown PNG filter during decoding");
+                    }
 
-                // Write the current row to the stream
-                writer.Write(current);
+                    // Write the current row to the stream
+                    writer.Write(current);
 
-                // Swap streams
-                previous = current;
+                    // Swap streams
+                    previous = current;
+                }
             }
         }
 

@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class CryptFilter : Filter
+public sealed class CryptFilter : IFilter
 {
-    public override string Name { get; } = "Crypt";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "Crypt";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }

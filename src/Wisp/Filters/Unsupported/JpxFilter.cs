@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class JpxFilter : Filter
+public sealed class JpxFilter : IFilter
 {
-    public override string Name { get; } = "JPXDecode";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "JPXDecode";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }

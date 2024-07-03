@@ -19,12 +19,12 @@
     <Copyright>Patrik Svensson</Copyright>
     <Authors>Patrik Svensson</Authors>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/patriksvensson/wisp</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PaulusParssinen/wisp</RepositoryUrl>
     <PackageIcon>wisp.png</PackageIcon>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/patriksvensson/wisp</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/PaulusParssinen/wisp</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>https://github.com/patriksvensson/wisp/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/PaulusParssinen/wisp/releases</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="Source Link">

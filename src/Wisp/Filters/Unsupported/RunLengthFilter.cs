@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class RunLengthFilter : Filter
+public sealed class RunLengthFilter : IFilter
 {
-    public override string Name { get; } = "RunLengthDecode";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "RunLengthDecode";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }

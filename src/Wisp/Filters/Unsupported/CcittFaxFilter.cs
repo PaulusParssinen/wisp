@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class CcittFaxFilter : Filter
+public sealed class CcittFaxFilter : IFilter
 {
-    public override string Name { get; } = "CCITTFaxDecode";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "CCITTFaxDecode";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }

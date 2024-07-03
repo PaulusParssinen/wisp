@@ -1,11 +1,11 @@
 namespace Wisp.Filters;
 
-public sealed class LzwFilter : Filter
+public sealed class LzwFilter : IFilter
 {
-    public override string Name { get; } = "LZWDecode";
-    public override bool Supported { get; } = false;
+    public string Name { get; } = "LZWDecode";
+    public bool Supported { get; } = false;
 
-    public override byte[] Decode(byte[] data, CosDictionary? parameters)
+    public byte[] Decode(ReadOnlySpan<byte> data, CosDictionary? parameters)
     {
         throw new NotSupportedException();
     }
