@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace Wisp.Tests.Infrastructure.Fixtures;
 
 public class CosDocumentFixture

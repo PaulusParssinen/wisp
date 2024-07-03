@@ -1,7 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosName : ICosPrimitive, IEquatable<CosName>
+[CosPrimitive]
+public sealed partial class CosName : ICosPrimitive, IEquatable<CosName>
 {
     public string Value { get; }
 
@@ -12,32 +13,12 @@ public sealed class CosName : ICosPrimitive, IEquatable<CosName>
         Value = value.TrimStart('/');
     }
 
-    public bool Equals(CosName? other)
-    {
-        return CosNameComparer.Shared.Equals(this, other);
-    }
+    public bool Equals(CosName? other) => CosNameComparer.Shared.Equals(this, other);
 
-    public override int GetHashCode()
-    {
-        return CosNameComparer.Shared.GetHashCode(this);
-    }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitName(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitName(this, context);
-    }
-
-    public override string ToString()
-    {
-        return $"[Name] {Value}";
-    }
+    public override int GetHashCode() => CosNameComparer.Shared.GetHashCode(this);
+    
+    /// <inheritdoc/>
+    public override string ToString() => $"[Name] {Value}";
 }
 
 public sealed class CosNameComparer : IEqualityComparer<CosName>
@@ -46,21 +27,11 @@ public sealed class CosNameComparer : IEqualityComparer<CosName>
 
     public bool Equals(CosName? x, CosName? y)
     {
-        if (x == null && y == null)
-        {
-            return true;
-        }
-
-        if (x == null || y == null)
-        {
-            return false;
-        }
+        if (x is null && y is null) return true;
+        if (x is null || y is null) return false;
 
         return x.Value.Equals(y.Value, StringComparison.Ordinal);
     }
 
-    public int GetHashCode(CosName obj)
-    {
-        return obj.Value.GetHashCode(StringComparison.Ordinal);
-    }
+    public int GetHashCode(CosName obj) => obj.Value.GetHashCode(StringComparison.Ordinal);
 }

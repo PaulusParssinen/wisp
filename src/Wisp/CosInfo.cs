@@ -7,8 +7,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Title
     {
-        get => this.Object.GetString(CosNames.Title);
-        set => this.Object.Set(CosNames.Title, value);
+        get => Object.Get<CosString>(CosNames.Title);
+        set => Object.Set(CosNames.Title, value);
     }
 
     /// <summary>
@@ -16,8 +16,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Author
     {
-        get => this.Object.GetString(CosNames.Author);
-        set => this.Object.Set(CosNames.Author, value);
+        get => Object.Get<CosString>(CosNames.Author);
+        set => Object.Set(CosNames.Author, value);
     }
 
     /// <summary>
@@ -25,8 +25,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Subject
     {
-        get => this.Object.GetString(CosNames.Subject);
-        set => this.Object.Set(CosNames.Subject, value);
+        get => Object.Get<CosString>(CosNames.Subject);
+        set => Object.Set(CosNames.Subject, value);
     }
 
     /// <summary>
@@ -34,8 +34,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Keywords
     {
-        get => this.Object.GetString(CosNames.Keywords);
-        set => this.Object.Set(CosNames.Keywords, value);
+        get => Object.Get<CosString>(CosNames.Keywords);
+        set => Object.Set(CosNames.Keywords, value);
     }
 
     /// <summary>
@@ -45,8 +45,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Creator
     {
-        get => this.Object.GetString(CosNames.Creator);
-        set => this.Object.Set(CosNames.Creator, value);
+        get => Object.Get<CosString>(CosNames.Creator);
+        set => Object.Set(CosNames.Creator, value);
     }
 
     /// <summary>
@@ -55,8 +55,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosString? Producer
     {
-        get => this.Object.GetString(CosNames.Producer);
-        set => this.Object.Set(CosNames.Producer, value);
+        get => Object.Get<CosString>(CosNames.Producer);
+        set => Object.Set(CosNames.Producer, value);
     }
 
     /// <summary>
@@ -64,8 +64,8 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosDate? CreationDate
     {
-        get => this.Object.GetDate(CosNames.CreationDate);
-        set => this.Object.Set(CosNames.CreationDate, value);
+        get => Object.Get<CosDate>(CosNames.CreationDate);
+        set => Object.Set(CosNames.CreationDate, value);
     }
 
     /// <summary>
@@ -74,17 +74,15 @@ public sealed class CosInfo : CosObjectReference<CosDictionary>
     /// </summary>
     public CosDate? ModDate
     {
-        get => this.Object.GetDate(CosNames.ModDate);
-        set => this.Object.Set(CosNames.ModDate, value);
+        get => Object.Get<CosDate>(CosNames.ModDate);
+        set => Object.Set(CosNames.ModDate, value);
     }
 
     public CosInfo(CosObject obj)
         : base(obj)
-    {
-    }
+    { }
 
     internal CosInfo(CosObjectReference id, CosDictionary dictionary)
         : base(id, dictionary)
-    {
-    }
+    { }
 }

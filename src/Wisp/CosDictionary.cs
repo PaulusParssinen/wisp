@@ -1,7 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, ICosPrimitive>>
+[CosPrimitive]
+public sealed partial class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, ICosPrimitive>>
 {
     private readonly Dictionary<CosName, ICosPrimitive> _dictionary;
 
@@ -75,10 +76,7 @@ public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, IC
         _dictionary[key] = value;
     }
 
-    public bool Remove(CosName key)
-    {
-        return _dictionary.Remove(key);
-    }
+    public bool Remove(CosName key) => _dictionary.Remove(key);
 
     public void Combine(CosDictionary other)
     {
@@ -96,119 +94,16 @@ public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, IC
         return _dictionary.TryGetValue(key, out obj);
     }
 
-    public IEnumerator<KeyValuePair<CosName, ICosPrimitive>> GetEnumerator()
-    {
-        return _dictionary.GetEnumerator();
-    }
+    public IEnumerator<KeyValuePair<CosName, ICosPrimitive>> GetEnumerator() => _dictionary.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitDictionary(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitDictionary(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public override string ToString()
-    {
-        return $"[Dictionary] Count = {_dictionary.Count}";
-    }
+    public override string ToString() => $"[Dictionary] Count = {_dictionary.Count}";
 }
 
 public static class PdfDictionaryExtensions
 {
-    public static CosInteger? GetInteger(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosInteger>(key);
-    }
-
-    public static CosInteger GetRequiredInteger(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosInteger>(key);
-    }
-
-    public static CosString? GetString(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosString>(key);
-    }
-
-    public static CosString GetRequiredString(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosString>(key);
-    }
-
-    public static CosDate? GetDate(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosDate>(key);
-    }
-
-    public static CosDate GetRequiredDate(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosDate>(key);
-    }
-
-    public static CosName? GetName(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosName>(key);
-    }
-
-    public static CosName GetRequiredName(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosName>(key);
-    }
-
-    public static CosObjectReference? GetObjectReference(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosObjectReference>(key);
-    }
-
-    public static CosObjectReference GetRequiredObjectReference(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosObjectReference>(key);
-    }
-
-    public static CosDictionary? GetDictionary(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosDictionary>(key);
-    }
-
-    public static CosDictionary GetRequiredDictionary(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosDictionary>(key);
-    }
-
-    public static CosArray? GetArray(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosArray>(key);
-    }
-
-    public static CosArray GetRequiredArray(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.GetRequired<CosArray>(key);
-    }
-
-    public static int? GetInt32(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosInteger>(key)?.IntValue;
-    }
-
-    public static long? GetInt64(this CosDictionary dictionary, CosName key)
-    {
-        return dictionary.Get<CosInteger>(key)?.Value;
-    }
-
+    // TODO: where T : ICosPrimitive
     public static T? Get<T>(this CosDictionary dictionary, CosName key)
-        where T : ICosPrimitive
     {
         if (!dictionary.TryGetValue(key, out var obj))
         {
@@ -229,8 +124,8 @@ public static class PdfDictionaryExtensions
         return item;
     }
 
+    // TODO: where T : ICosPrimitive
     public static T GetRequired<T>(this CosDictionary dictionary, CosName key)
-        where T : ICosPrimitive
     {
         if (!dictionary.TryGetValue(key, out var obj))
         {

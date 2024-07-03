@@ -1,7 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosDate : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosDate : ICosPrimitive
 {
     private static readonly string[] _formats =
     [
@@ -44,23 +45,5 @@ public sealed class CosDate : ICosPrimitive
         return false;
     }
 
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitDate(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitDate(this, context);
-    }
-
-    public override string ToString()
-    {
-        return "[ObjectID] " +
-               Value.ToString(
-                   "yyyyMMddHHmmsszzz",
-                   CultureInfo.InvariantCulture);
-    }
+    public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"[ObjectID] {Value:yyyyMMddHHmmsszzz}");
 }

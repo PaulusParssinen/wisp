@@ -6,7 +6,7 @@ using Wisp.SourceGeneration.Extensions;
 
 namespace Wisp.SourceGeneration;
 
-public sealed partial class VisitorGenerator
+public sealed partial class CosPrimitiveGenerator
 {
     /// <summary>
     /// Writes syntax for a class definition of the given <paramref name="cosPrimitive"/>.
@@ -16,20 +16,22 @@ public sealed partial class VisitorGenerator
     {
         string primitiveNameWithoutPrefix = cosPrimitive.Name[3..];
 
-        writer.WriteGeneratedAttributes(nameof(VisitorGenerator));
+        writer.WriteGeneratedAttributes(nameof(CosPrimitiveGenerator));
 
-        writer.WriteLine($"public sealed partial class {cosPrimitive.Name} : global::Wisp.ICosPrimitive");
+        writer.WriteLine($"public sealed partial class {cosPrimitive.Name} : global::Wisp.ICosVisitable");
 
         using (writer.WriteBlock())
         {
             writer.WriteLine($$"""
-                [DebuggerStepThrough]
+                [global::System.Diagnostics.DebuggerStepThrough]
+                [global::System.Diagnostics.StackTraceHiddenAttribute]
                 public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
                 {
                     visitor.Visit{{primitiveNameWithoutPrefix}}(this, context);
                 }
 
-                [DebuggerStepThrough]
+                [global::System.Diagnostics.DebuggerStepThrough]
+                [global::System.Diagnostics.StackTraceHiddenAttribute]
                 public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
                 {
                     return visitor.Visit{{primitiveNameWithoutPrefix}}(this, context);

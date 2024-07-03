@@ -1,7 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosObjectStream : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosObjectStream : ICosPrimitive
 {
     private readonly CosStream _stream;
     private readonly List<(int Id, long Offset)> _offsetsByIndex = [];
@@ -12,7 +13,7 @@ public sealed class CosObjectStream : ICosPrimitive
     /// <summary>
     /// Gets the number of indirect objects stored in the stream.
     /// </summary>
-    public int N => _stream.Dictionary.GetInt32(CosNames.N) ?? 0;
+    public int N => _stream.Dictionary.Get<CosInteger>(CosNames.N)?.IntValue ?? 0;
 
     public CosDictionary Dictionary => _stream.Dictionary;
 
@@ -161,17 +162,11 @@ public sealed class CosObjectStream : ICosPrimitive
 
     private void EnsureOffsetsHaveBeenPopulated(CosParser parser)
     {
-        if (_unpacked)
-        {
-            return;
-        }
+        if (_unpacked) return;
 
-        var objectOffset = _stream.Dictionary.GetInt64(CosNames.First);
-        if (objectOffset == null)
-        {
-            throw new WispException("Object stream is missing /First parameter");
-        }
-
+        var objectOffset = _stream.Dictionary.Get<CosInteger>(CosNames.First) 
+            ?? throw new WispException("Object stream is missing /First parameter");
+        
         for (var i = 0; i < N; i++)
         {
             if (!parser.CanRead)
@@ -189,20 +184,5 @@ public sealed class CosObjectStream : ICosPrimitive
         _unpacked = true;
     }
 
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitObjectStream(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitObjectStream(this, context);
-    }
-
-    public override string ToString()
-    {
-        return $"[ObjectStream] Objects = {N}, Size = {_stream.Length}";
-    }
+    public override string ToString() => $"[ObjectStream] Objects = {N}, Size = {_stream.Length}";
 }

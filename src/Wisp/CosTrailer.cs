@@ -1,7 +1,12 @@
 namespace Wisp;
 
-public sealed class CosTrailer : CosDictionary
+public sealed class CosTrailer
 {
+    /// <summary>
+    /// The underlying trailer dictionary.
+    /// </summary>
+    public CosDictionary Dictionary { get; }
+
     /// <summary>
     /// Gets or sets the total number of entries in the file's cross-reference table,
     /// as defined by the combination of the original section and all update
@@ -12,8 +17,8 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public CosInteger Size
     {
-        get => this.GetRequiredInteger(CosNames.Size);
-        set => this.Set(CosNames.Size, value);
+        get => Dictionary.GetRequired<CosInteger>(CosNames.Size);
+        set => Dictionary.Set(CosNames.Size, value);
     }
 
     /// <summary>
@@ -23,8 +28,8 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public long? Prev
     {
-        get => this.GetInt64(CosNames.Prev);
-        set => this.Set(CosNames.Prev, new CosInteger(value));
+        get => Dictionary.Get<CosInteger>(CosNames.Prev)?.Value;
+        set => Dictionary.Set(CosNames.Prev, new CosInteger(value ?? 0));
     }
 
     /// <summary>
@@ -33,8 +38,8 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public CosObjectReference Root
     {
-        get => this.GetRequiredObjectReference(CosNames.Root);
-        set => this.Set(CosNames.Root, value);
+        get => Dictionary.GetRequired<CosObjectReference>(CosNames.Root);
+        set => Dictionary.Set(CosNames.Root, value);
     }
 
     /// <summary>
@@ -42,8 +47,8 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public CosDictionary? Encrypt
     {
-        get => this.GetDictionary(CosNames.Encrypt);
-        set => this.Set(CosNames.Encrypt, value);
+        get => Dictionary.Get<CosDictionary>(CosNames.Encrypt);
+        set => Dictionary.Set(CosNames.Encrypt, value);
     }
 
     /// <summary>
@@ -51,8 +56,8 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public CosObjectReference? Info
     {
-        get => this.GetObjectReference(CosNames.Info);
-        set => this.Set(CosNames.Info, value);
+        get => Dictionary.Get<CosObjectReference>(CosNames.Info);
+        set => Dictionary.Set(CosNames.Info, value);
     }
 
     /// <summary>
@@ -61,12 +66,12 @@ public sealed class CosTrailer : CosDictionary
     /// </summary>
     public CosArray? Id
     {
-        get => this.GetArray(CosNames.Id);
-        set => this.Set(CosNames.Id, value);
+        get => Dictionary.Get<CosArray>(CosNames.Id);
+        set => Dictionary.Set(CosNames.Id, value);
     }
 
     public CosTrailer(CosDictionary dictionary)
-        : base(dictionary)
     {
+        Dictionary = dictionary;
     }
 }

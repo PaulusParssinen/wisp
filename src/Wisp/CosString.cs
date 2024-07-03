@@ -1,8 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-[CosVisitable]
-public sealed partial class CosString
+[CosPrimitive]
+public sealed partial class CosString : ICosPrimitive
 {
     public string Value { get; }
     public CosStringEncoding Encoding { get; set; }
@@ -19,5 +19,6 @@ public sealed partial class CosString
         Encoding = encoding;
     }
 
+    /// <inheritdoc />
     public override string ToString() => $"[String] {Value} ({Encoding})";
 }

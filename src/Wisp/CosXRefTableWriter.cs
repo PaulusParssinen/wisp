@@ -15,7 +15,7 @@ internal static class CosXRefTableWriter
         var sizes = triplets.GetSizes();
         var encoded = triplets.Encode(sizes);
 
-        var dictionary = new CosDictionary(document.Trailer)
+        var dictionary = new CosDictionary(document.Trailer.Dictionary)
         {
             [CosNames.W] = sizes.ToCosArray(),
             [CosNames.Type] = new CosName("XRef"),
@@ -45,13 +45,9 @@ internal static class CosXRefTableWriter
         var encoded = new List<CosXRef>();
         foreach (var id in ids)
         {
-            var xref = xRefTable.GetXRef(id);
-            if (xref == null)
-            {
-                throw new WispException(
-                    $"Could not find xref for object {id}");
-            }
-
+            var xref = xRefTable.GetXRef(id) ?? 
+                throw new WispException($"Could not find xref for object {id}");
+            
             xref = xref.CreateCopy();
             if (xref is CosIndirectXRef indirect)
             {
@@ -95,10 +91,7 @@ internal static class CosXRefTableWriter
 
     private sealed record EntrySize(int First, int Second, int Third)
     {
-        public CosArray ToCosArray()
-        {
-            return new CosArray(new[] { new CosInteger(First), new CosInteger(Second), new CosInteger(Third), });
-        }
+        public CosArray ToCosArray() => new([new CosInteger(First), new CosInteger(Second), new CosInteger(Third),]);
     }
 
     private sealed class Entries(List<Entry> items)
@@ -117,6 +110,7 @@ internal static class CosXRefTableWriter
                 stream.Write(bytes);
             }
 
+            // TODO: We can precalc buffer size and blit the values faster.
             var stream = new MemoryStream();
             foreach (var triplet in items)
             {
@@ -142,6 +136,8 @@ internal static class CosXRefTableWriter
 
         public EntrySize GetSizes()
         {
+            // TODO: Optimize by max + bitops
+
             static int GetBytesNeeded(long value)
             {
                 var bytes = ((int)Math.Log(value, 2)) / 8;

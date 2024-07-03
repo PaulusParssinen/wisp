@@ -79,7 +79,8 @@ public static class CosXRefTableReader
         var sizes = GetFieldSizes(stream);
         var ids = GetObjectIds(stream);
 
-        foreach (var entry in ReadEntries(stream, sizes))
+        var entries = ReadEntries(stream, sizes);
+        foreach (var entry in entries)
         {
             if (ids.Count == 0)
             {
@@ -126,21 +127,16 @@ public static class CosXRefTableReader
 
     private static int[] GetFieldSizes(CosStream stream)
     {
-        var sizes = stream.Dictionary.GetArray(CosNames.W);
-        if (sizes == null)
-        {
-            throw new WispException("XRef Stream is missing /W array");
-        }
-
+        var sizes = stream.Dictionary.Get<CosArray>(CosNames.W) ?? throw new WispException("XRef Stream is missing /W array");
         if (sizes.Count != 3)
         {
             throw new WispException($"Expected 3 items in /W array in XRef stream. Found {sizes.Count}");
         }
 
         var w = new int[3];
-        w[0] = sizes.GetInt32At(0) ?? 1;
-        w[1] = sizes.GetInt32At(1) ?? 0;
-        w[2] = sizes.GetInt32At(2) ?? 0;
+        w[0] = sizes.GetAt<CosInteger>(0)?.IntValue ?? 1;
+        w[1] = sizes.GetAt<CosInteger>(1)?.IntValue ?? 0;
+        w[2] = sizes.GetAt<CosInteger>(2)?.IntValue ?? 0;
 
         if (w[0] < 0 || w[1] < 0 || w[2] < 0)
         {
@@ -152,21 +148,15 @@ public static class CosXRefTableReader
 
     private static Queue<int> GetObjectIds(CosStream stream)
     {
-        var size = stream.Dictionary.GetInt64(CosNames.Size);
-        if (size == null)
-        {
-            throw new WispException(
-                "Stream xref table did not have size");
-        }
-
-        var indexArray = stream.Dictionary.GetArray(CosNames.Index);
+        var size = stream.Dictionary.Get<CosInteger>(CosNames.Size)?.Value ?? throw new WispException("Stream xref table did not have size");
+        var indexArray = stream.Dictionary.Get<CosArray>(CosNames.Index);
         if (indexArray == null)
         {
-            indexArray = new CosArray
-            {
+            indexArray =
+            [
                 new CosInteger(0),
                 new CosInteger(size),
-            };
+            ];
         }
 
         var indices = new List<int>();
@@ -199,7 +189,7 @@ public static class CosXRefTableReader
         return new Queue<int>(result);
     }
 
-    private static IEnumerable<(int First, int Second, int Third)> ReadEntries(CosStream stream, int[] sizes)
+    private static List<(int First, int Second, int Third)> ReadEntries(CosStream stream, int[] sizes)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
@@ -208,34 +198,30 @@ public static class CosXRefTableReader
             throw new WispException("Invalid sizes");
         }
 
-        var data = stream.GetUnfilteredData();
-        if (data is null)
+        var entries = new List<(int First, int Second, int Third)>();
+        var data = new ReadOnlySpan<byte>(stream.GetUnfilteredData());
+        
+        while (!data.IsEmpty)
         {
-            yield break;
+            var first = Unpack(ref data, sizes[0]);
+            var second = Unpack(ref data, sizes[1]);
+            var third = Unpack(ref data, sizes[2]);
+
+            entries.Add((first, second, third));
         }
 
-        using var reader = new MemoryStream(data);
-        while (reader.Position < reader.Length)
-        {
-            var first = Unpack(reader, sizes[0]);
-            var second = Unpack(reader, sizes[1]);
-            var third = Unpack(reader, sizes[2]);
-
-            yield return (first, second, third);
-        }
-
-        yield break;
+        return entries;
 
         // Unpacks an integer using n bytes in the stream
-        static int Unpack(Stream stream, int length)
+        static int Unpack(ref ReadOnlySpan<byte> data, int length)
         {
-            var accumulated = 0;
-            for (var index = 0; index < length; index++)
+            int accumulated = 0;
+            for (var i = 0; i < length; i++)
             {
-                var offset = 8 * (length - index - 1);
-                var value = stream.ReadByte();
-                accumulated |= offset == 0 ? value : value << offset;
+                accumulated |= data[i] << 8 * (length - i - 1);
             }
+
+            data = data.Slice(length);
 
             return accumulated;
         }

@@ -1,5 +1,5 @@
 namespace Wisp;
 
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class CosVisitableAttribute : Attribute
+public sealed class CosPrimitiveAttribute : Attribute
 { }

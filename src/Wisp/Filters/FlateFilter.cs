@@ -75,10 +75,10 @@ public sealed class FlateFilter : IFilter
     private static (int Predictor, int Columns, int Colors, int BitsPerComponent)
         GetPredictorSettings(CosDictionary? parameters)
     {
-        var predictor = parameters?.GetInt32(CosNames.Predictor) ?? 1;
-        var columns = parameters?.GetInt32(CosNames.Columns) ?? 1;
-        var colors = parameters?.GetInt32(CosNames.Colors) ?? 1;
-        var bits = parameters?.GetInt32(CosNames.BitsPerComponent) ?? 8;
+        var predictor = parameters?.Get<CosInteger>(CosNames.Predictor)?.IntValue ?? 1;
+        var columns = parameters?.Get<CosInteger>(CosNames.Columns)?.IntValue ?? 1;
+        var colors = parameters?.Get<CosInteger>(CosNames.Colors)?.IntValue ?? 1;
+        var bits = parameters?.Get<CosInteger>(CosNames.BitsPerComponent)?.IntValue ?? 8;
 
         return (predictor, columns, colors, bits);
     }

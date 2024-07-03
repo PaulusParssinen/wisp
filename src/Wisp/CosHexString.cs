@@ -1,30 +1,16 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosHexString : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosHexString : ICosPrimitive
 {
     public byte[] Value { get; }
 
     public CosHexString(byte[] value)
     {
-        Value = value ?? throw new ArgumentNullException(nameof(value));
+        Value = value;
     }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitHexString(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitHexString(this, context);
-    }
-
-    public override string ToString()
-    {
-        var hex = Convert.ToHexString(Value);
-        return $"[Hex] {hex}";
-    }
+    
+    /// <inheritdoc/>
+    public override string ToString() => $"[Hex] {Convert.ToHexString(Value)}";
 }

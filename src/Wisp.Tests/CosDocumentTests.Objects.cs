@@ -18,9 +18,9 @@ public sealed partial class CosDocumentTests
             obj.ShouldNotBeNull();
             obj.Object.ShouldBeOfType<CosDictionary>().And(dict =>
             {
-                dict.GetInteger(CosNames.Count).ShouldHaveValue(2);
-                dict.GetObjectReference(CosNames.First).ShouldBe(8, 0);
-                dict.GetObjectReference(CosNames.Last).ShouldBe(8, 0);
+                dict.Get<CosInteger>(CosNames.Count).ShouldHaveValue(2);
+                dict.Get<CosObjectReference>(CosNames.First).ShouldBe(8, 0);
+                dict.Get<CosObjectReference>(CosNames.Last).ShouldBe(8, 0);
             });
         }
     }

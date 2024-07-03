@@ -55,7 +55,7 @@ public static class CosSerializer
                 writer.WriteComment("Trailer");
                 writer.WriteElement("Trailer", () =>
                 {
-                    document.Trailer.Accept(Visitor.Shared, writer);
+                    document.Trailer.Dictionary.Accept(Visitor.Shared, writer);
                 });
 
                 writer.WriteComment("Objects");

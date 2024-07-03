@@ -12,9 +12,9 @@ namespace Wisp.SourceGeneration;
 
 /// <inheritdoc />
 [Generator(LanguageNames.CSharp)]
-public sealed partial class VisitorGenerator : IIncrementalGenerator
+public sealed partial class CosPrimitiveGenerator : IIncrementalGenerator
 {
-    private const string CosVisitableAttributeFullName = "Wisp.CosVisitableAttribute";
+    private const string CosPrimitiveAttributeFullName = "Wisp.CosPrimitiveAttribute";
     private const string CosPrimitiveNamespace = "Wisp";
 
     /// <inheritdoc />
@@ -22,7 +22,7 @@ public sealed partial class VisitorGenerator : IIncrementalGenerator
     {
         // Gather info for all the annotated visitable primitives
         IncrementalValuesProvider<Result<CosPrimitiveInfo?>> cosPrimitiveInfoResults =
-            context.SyntaxProvider.ForAttributeWithMetadataName(CosVisitableAttributeFullName,
+            context.SyntaxProvider.ForAttributeWithMetadataName(CosPrimitiveAttributeFullName,
                 predicate: static (node, token) => node is ClassDeclarationSyntax,
                 transform: static (context, token) =>
                 {
@@ -48,7 +48,7 @@ public sealed partial class VisitorGenerator : IIncrementalGenerator
             .Where(static (result) => result.Value is not null)
             .Select(static (result, token) => result.Value!);
 
-        // Generate instruction definitions
+        // Generate primitive visitor definitions
         context.RegisterSourceOutput(instructions, static (context, instruction) =>
         {
             using IndentedTextWriter writer = new();
@@ -58,7 +58,7 @@ public sealed partial class VisitorGenerator : IIncrementalGenerator
 
             WriteVisitableCosPrimitiveSyntax(writer, instruction);
 
-            context.AddSource($"{CosPrimitiveNamespace}.{instruction.Name}.ICosPrimitive.g.cs", writer.ToString());
+            context.AddSource($"{CosPrimitiveNamespace}.{instruction.Name}.ICosVisitable.g.cs", writer.ToString());
         });
 
         // Gather all primitive information and generate factory method
