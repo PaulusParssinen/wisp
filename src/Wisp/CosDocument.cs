@@ -5,7 +5,11 @@ public sealed class CosDocument : IDisposable
     private readonly CosObjectResolver? _resolver;
     private CosInfo? _info;
 
-    public PdfVersion Version { get; }
+    /// <summary>
+    /// The PDF version in the header of the document.
+    /// </summary>
+    public Version Version { get; }
+
     public ICosObjectCache Objects { get; }
     public CosXRefTable XRefTable { get; }
     public CosTrailer Trailer { get; }
@@ -13,14 +17,14 @@ public sealed class CosDocument : IDisposable
 
     public CosDocument()
     {
-        Version = PdfVersion.Pdf1_7;
+        Version = new Version(1, 7);
         XRefTable = new CosXRefTable();
         Objects = new CosObjectCache(XRefTable, null);
         Trailer = new CosTrailer(new CosDictionary());
     }
 
     internal CosDocument(
-        PdfVersion version,
+        Version version,
         CosXRefTable xRefTable,
         CosTrailer trailer,
         CosInfo? info,

@@ -27,10 +27,7 @@ public sealed class CosWriter : IDisposable
         }
     }
 
-    public void WriteByte(byte value)
-    {
-        _stream.WriteByte(value);
-    }
+    public void WriteByte(byte value) => _stream.WriteByte(value);
 
     public void WriteByte(char value)
     {

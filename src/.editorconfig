@@ -1,119 +1,80 @@
-
 [*.cs]
-# IDE0055: Fix formatting
-dotnet_diagnostic.ide0055.severity = warning
 
-# SA1101: Prefix local calls with this
-dotnet_diagnostic.sa1101.severity = none
+# IDE0057: Use range operator
+csharp_style_prefer_range_operator = false
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_braces = when_multiline:silent
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = false:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+csharp_indent_labels = one_less_than_current
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = when_on_single_line:silent
+csharp_space_around_binary_operators = before_and_after
+[*.{cs,vb}]
+#### Naming styles ####
 
-# SA1633: File should have header
-dotnet_diagnostic.sa1633.severity = none
+# Naming rules
 
-# SA1201: Elements should appear in the correct order
-dotnet_diagnostic.sa1201.severity = none
+dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
+dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
+dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 
-# SA1202: Public members should come before private members
-dotnet_diagnostic.sa1202.severity = none
+dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
 
-# SA1309: Field names should not begin with underscore
-dotnet_diagnostic.sa1309.severity = none
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
-# SA1404: Code analysis suppressions should have justification
-dotnet_diagnostic.sa1404.severity = none
+# Symbol specifications
 
-# SA1516: Elements should be separated by a blank line
-dotnet_diagnostic.sa1516.severity = none
+dotnet_naming_symbols.interface.applicable_kinds = interface
+dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.interface.required_modifiers = 
 
-# CA1303: Do not pass literals as localized parameters
-dotnet_diagnostic.ca1303.severity = none
+dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
+dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.types.required_modifiers = 
 
-# CSA1204: Static members should appear before non-static members
-dotnet_diagnostic.sa1204.severity = none
+dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
+dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.non_field_members.required_modifiers = 
 
-# IDE0052: Remove unread private members
-dotnet_diagnostic.ide0052.severity = warning
+# Naming styles
 
-# IDE0063: Use simple 'using' statement
-csharp_prefer_simple_using_statement = false:suggestion
+dotnet_naming_style.begins_with_i.required_prefix = I
+dotnet_naming_style.begins_with_i.required_suffix = 
+dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-# IDE0018: Variable declaration can be inlined
-dotnet_diagnostic.ide0018.severity = warning
+dotnet_naming_style.pascal_case.required_prefix = 
+dotnet_naming_style.pascal_case.required_suffix = 
+dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-# SA1625: Element documenation should not be copied and pasted
-dotnet_diagnostic.sa1625.severity = none
-
-# IDE0005: Using directive is unnecessary
-dotnet_diagnostic.ide0005.severity = warning
-
-# SA1117: Parameters should be on same line or separate lines
-dotnet_diagnostic.sa1117.severity = none
-
-# SA1404: Code analysis suppression should have justification
-dotnet_diagnostic.sa1404.severity = none
-
-# SA1101: Prefix local calls with this
-dotnet_diagnostic.sa1101.severity = none
-
-# SA1633: File should have header
-dotnet_diagnostic.sa1633.severity = none
-
-# SA1649: File name should match first type name
-dotnet_diagnostic.sa1649.severity = none
-
-# SA1402: File may only contain a single type
-dotnet_diagnostic.sa1402.severity = none
-
-# CA1814: Prefer jagged arrays over multidimensional
-dotnet_diagnostic.ca1814.severity = none
-
-# RCS1194: Implement exception constructors.
-dotnet_diagnostic.rcs1194.severity = none
-
-# CA1032: Implement standard exception constructors
-dotnet_diagnostic.ca1032.severity = none
-
-# CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.ca1826.severity = none
-
-# RCS1079: Throwing of new NotImplementedException.
-dotnet_diagnostic.rcs1079.severity = warning
-
-# RCS1057: Add empty line between declarations.
-dotnet_diagnostic.rcs1057.severity = none
-
-# RCS1057: Validate arguments correctly
-dotnet_diagnostic.rcs1227.severity = none
-
-# IDE0004: Remove Unnecessary Cast
-dotnet_diagnostic.ide0004.severity = warning
-
-# CA1810: Initialize reference type static fields inline
-dotnet_diagnostic.ca1810.severity = none
-
-# IDE0044: Add readonly modifier
-dotnet_diagnostic.ide0044.severity = warning
-
-# RCS1047: Non-asynchronous method name should not end with 'Async'.
-dotnet_diagnostic.rcs1047.severity = none
-
-# RCS1090: Call 'ConfigureAwait(false)'.
-dotnet_diagnostic.rcs1090.severity = warning
-
-# SA1600: Missing XML comment for publicly visible type or member
-dotnet_diagnostic.sa1600.severity = none
-
-# CS1591: Missing XML comment for publicly visible type or member
-dotnet_diagnostic.cs1591.severity = none
-
-# SA1602: Enumeration items should be documented
-dotnet_diagnostic.sa1602.severity = none
-
-# SA1601: Partial elements should be documented
-dotnet_diagnostic.sa1601.severity = none
-
-# Microsoft .NET properties
-csharp_new_line_before_members_in_object_initializers = true
-
-# ReSharper properties
-resharper_trailing_comma_in_multiline_lists = true
-resharper_wrap_object_and_collection_initializer_style = chop_always
+dotnet_naming_style.pascal_case.required_prefix = 
+dotnet_naming_style.pascal_case.required_suffix = 
+dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+indent_size = 4
+end_of_line = lf
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:silent
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent

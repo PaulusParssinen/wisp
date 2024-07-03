@@ -7,23 +7,16 @@ public sealed class CosArray : ICosPrimitive, IEnumerable<ICosPrimitive>
 
     public int Count => _items.Count;
 
-    public ICosPrimitive this[int index]
-    {
-        get => _items[index];
-    }
+    public ICosPrimitive this[int index] => _items[index];
 
     public CosArray()
     {
-        _items = new List<ICosPrimitive>();
+        _items = [];
     }
 
     public CosArray(IEnumerable<ICosPrimitive> items)
-        : this()
     {
-        foreach (var item in items)
-        {
-            Add(item);
-        }
+        _items = new List<ICosPrimitive>(items);
     }
 
     public void Add(ICosPrimitive item)
@@ -41,20 +34,10 @@ public sealed class CosArray : ICosPrimitive, IEnumerable<ICosPrimitive>
         return _items[index];
     }
 
-    public IEnumerator<ICosPrimitive> GetEnumerator()
-    {
-        return _items.GetEnumerator();
-    }
+    public IEnumerator<ICosPrimitive> GetEnumerator() => _items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    public override string ToString()
-    {
-        return $"[Array] Count = {_items.Count}";
-    }
+    public override string ToString() => $"[Array] Count = {_items.Count}";
 
     [DebuggerStepThrough]
     public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
@@ -110,7 +93,7 @@ public static class CosArrayExtensions
         where T : ICosPrimitive
     {
         var obj = array.GetAt(index);
-        if (obj == null)
+        if (obj is null)
         {
             return default;
         }

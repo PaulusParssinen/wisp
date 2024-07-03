@@ -37,10 +37,7 @@ public class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, IC
 
     public bool ContainsKey(CosName key)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _dictionary.ContainsKey(key);
     }

@@ -65,10 +65,7 @@ public abstract class CosVisitor<TContext> : ICosVisitor<TContext>
     [DebuggerStepThrough]
     protected virtual void Visit(ICosVisitable? obj, TContext context)
     {
-        if (obj == null)
-        {
-            return;
-        }
+        if (obj is null) return;
 
         RuntimeHelpers.EnsureSufficientExecutionStack();
         obj.Accept(this, context);

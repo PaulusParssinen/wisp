@@ -1,10 +1,7 @@
-using JetBrains.Annotations;
-
 namespace Wisp.Tests;
 
 public sealed partial class CosDocumentTests
 {
-    [UsedImplicitly]
     public sealed class Parsing
     {
         public sealed class Strings

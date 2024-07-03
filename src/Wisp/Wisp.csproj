@@ -10,4 +10,11 @@
     <None Include="../../resources/wisp.png" Pack="true" PackagePath="\" Link="Properties/wisp.png" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+	
+  <ItemGroup>
+	<ProjectReference Include="..\Wisp.SourceGeneration\Wisp.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 </Project>

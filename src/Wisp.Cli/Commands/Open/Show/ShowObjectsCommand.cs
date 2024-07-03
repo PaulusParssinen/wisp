@@ -1,9 +1,7 @@
 namespace Wisp.Cli.Show;
 
-[UsedImplicitly]
 public sealed class ShowObjectsCommand : ShowCommand<ShowObjectsCommand.Settings>
 {
-    [UsedImplicitly(ImplicitUseTargetFlags.Members)]
     public sealed class Settings : ShowSettings
     {
         [CommandOption("-t|--traverse")]

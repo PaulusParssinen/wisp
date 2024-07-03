@@ -29,36 +29,21 @@ public sealed class CosParser : IDisposable
         return _lexer.Seek(offset, origin);
     }
 
-    public int ReadByte()
-    {
-        return _lexer.ReadByte();
-    }
+    public int ReadByte() => _lexer.ReadByte();
 
-    public ReadOnlySpan<byte> ReadBytes(int count)
-    {
-        return _lexer.ReadBytes(count);
-    }
+    public void ReadBytes(Span<byte> buffer) => _lexer.ReadBytes(buffer);
 
     public CosToken? PeekToken()
     {
-        _lexer.Peek(out var token);
+        _lexer.TryPeek(out var token);
         return token;
     }
 
-    public CosToken ReadToken()
-    {
-        return _lexer.Read();
-    }
+    public CosToken ReadToken() => _lexer.Read();
 
-    public bool CheckToken(CosTokenKind kind)
-    {
-        return _lexer.Check(kind);
-    }
+    public bool CheckToken(CosTokenKind kind) => _lexer.Check(kind);
 
-    public CosToken ExpectToken(CosTokenKind kind)
-    {
-        return _lexer.Expect(kind);
-    }
+    public CosToken ExpectToken(CosTokenKind kind) => _lexer.Expect(kind);
 
     public ICosPrimitive Parse()
     {
@@ -67,7 +52,7 @@ public sealed class CosParser : IDisposable
             _lexer.Read();
         }
 
-        if (!_lexer.Peek(out var token))
+        if (!_lexer.TryPeek(out var token))
         {
             throw new WispParserException(
                 this, "Reached end of stream");
@@ -103,11 +88,11 @@ public sealed class CosParser : IDisposable
         var position = _lexer.Position;
 
         // Got an integer next?
-        if (_lexer.Peek(out var token) && token.Kind == CosTokenKind.Integer)
+        if (_lexer.TryPeek(out var token) && token.Kind == CosTokenKind.Integer)
         {
             var generation = _lexer.Expect(CosTokenKind.Integer).ParseInt32();
 
-            if (_lexer.Peek(out token))
+            if (_lexer.TryPeek(out token))
             {
                 switch (token.Kind)
                 {
@@ -213,7 +198,7 @@ public sealed class CosParser : IDisposable
         _lexer.Expect(CosTokenKind.BeginDictionary);
 
         var result = new CosDictionary();
-        while (_lexer.Peek(out var token))
+        while (_lexer.TryPeek(out var token))
         {
             if (token.Kind == CosTokenKind.EndDictionary)
             {
@@ -264,7 +249,7 @@ public sealed class CosParser : IDisposable
         _lexer.Expect(CosTokenKind.BeginArray);
 
         var result = new CosArray();
-        while (_lexer.Peek(out var token))
+        while (_lexer.TryPeek(out var token))
         {
             if (token.Kind == CosTokenKind.EndArray)
             {
@@ -282,7 +267,7 @@ public sealed class CosParser : IDisposable
     private CosStream? ParseStream(CosDictionary metadata)
     {
         // Not a stream?
-        if (!_lexer.Peek(out var streamToken) || streamToken.Kind != CosTokenKind.BeginStream)
+        if (!_lexer.TryPeek(out var streamToken) || streamToken.Kind != CosTokenKind.BeginStream)
         {
             return null;
         }
@@ -310,9 +295,11 @@ public sealed class CosParser : IDisposable
             throw new WispParserException(this, "Expected an end-of-line marker consisting either of CRLF or a single LF.");
         }
 
-        var data = _lexer.ReadBytes(length.Value);
+        var data = new byte[length.Value];
+
+        _lexer.ReadBytes(data);
         _lexer.Expect(CosTokenKind.EndStream);
 
-        return new CosStream(metadata, data.ToArray());
+        return new CosStream(metadata, data);
     }
 }

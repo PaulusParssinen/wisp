@@ -42,17 +42,15 @@ internal sealed class ByteStreamReader
 
     public char ReadChar() => (char)ReadByte();
 
-    public ReadOnlySpan<byte> ReadBytes(int count)
+    public void ReadBytes(Span<byte> buffer)
     {
-        if (_position + count > _buffer.Length)
+        if (_position + buffer.Length > _buffer.Length)
         {
             throw new WispException("Exceeded stream end");
         }
 
-        var result = _buffer.AsSpan(_position, count);
-        _position += count;
-
-        return result;
+        _buffer.AsSpan(_position, buffer.Length).CopyTo(buffer);
+        _position += _buffer.Length;
     }
 
     public long Seek(long offset, SeekOrigin origin)

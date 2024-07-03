@@ -1,12 +1,10 @@
 namespace Wisp.Cli;
 
-[UsedImplicitly]
 public sealed class SaveCommand : OpenCommand<SaveCommand.Settings>
 {
     private static readonly string[] _compressions =
         ["none", "fastest", "optimal", "smallest"];
 
-    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public sealed class Settings : OpenSettings
     {
         [CommandArgument(0, "<OUTPUT>")]

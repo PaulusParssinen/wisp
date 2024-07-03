@@ -3,28 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wisp", "Wisp\Wisp.csproj", "{00416B9D-D201-48DC-8B9C-F9C957B4CEA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wisp", "Wisp\Wisp.csproj", "{00416B9D-D201-48DC-8B9C-F9C957B4CEA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wisp.Tests", "Wisp.Tests\Wisp.Tests.csproj", "{5CDC15C9-4F30-4A86-B252-C7F5F9E8557E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wisp.Tests", "Wisp.Tests\Wisp.Tests.csproj", "{5CDC15C9-4F30-4A86-B252-C7F5F9E8557E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{7230E35D-9242-4D22-9473-2D95362BE94A}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		AutoUpdateAssemblyName.txt = AutoUpdateAssemblyName.txt
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
-		.editorconfig = .editorconfig
+		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wisp.Testing", "Wisp.Testing\Wisp.Testing.csproj", "{90050AE8-D78C-434F-8756-BA5155AE6A49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wisp.Cli", "Wisp.Cli\Wisp.Cli.csproj", "{22B2DDAA-C469-4F23-AF1B-0DF99A946592}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wisp.Cli", "Wisp.Cli\Wisp.Cli.csproj", "{22B2DDAA-C469-4F23-AF1B-0DF99A946592}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wisp.SourceGeneration", "Wisp.SourceGeneration\Wisp.SourceGeneration.csproj", "{20D740F7-8873-4FAA-BA46-D86BE96BF261}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{00416B9D-D201-48DC-8B9C-F9C957B4CEA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -35,13 +34,19 @@ Global
 		{5CDC15C9-4F30-4A86-B252-C7F5F9E8557E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CDC15C9-4F30-4A86-B252-C7F5F9E8557E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CDC15C9-4F30-4A86-B252-C7F5F9E8557E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90050AE8-D78C-434F-8756-BA5155AE6A49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90050AE8-D78C-434F-8756-BA5155AE6A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90050AE8-D78C-434F-8756-BA5155AE6A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90050AE8-D78C-434F-8756-BA5155AE6A49}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22B2DDAA-C469-4F23-AF1B-0DF99A946592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{22B2DDAA-C469-4F23-AF1B-0DF99A946592}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22B2DDAA-C469-4F23-AF1B-0DF99A946592}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22B2DDAA-C469-4F23-AF1B-0DF99A946592}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20D740F7-8873-4FAA-BA46-D86BE96BF261}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20D740F7-8873-4FAA-BA46-D86BE96BF261}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20D740F7-8873-4FAA-BA46-D86BE96BF261}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20D740F7-8873-4FAA-BA46-D86BE96BF261}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41A65763-9475-48E7-A113-F030B6935F94}
 	EndGlobalSection
 EndGlobal

@@ -1,9 +1,7 @@
 namespace Wisp.Cli.Show;
 
-[UsedImplicitly]
 public sealed class ShowXRefTableCommand : ShowCommand<ShowXRefTableCommand.Settings>
 {
-    [UsedImplicitly]
     public sealed class Settings : ShowSettings
     {
         public Settings(string input)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -15,11 +15,10 @@
 
   <ItemGroup>
     <None Include="../../resources/wisp.png" Pack="true" PackagePath="\" Link="Properties/wisp.png" />
-    <AdditionalFiles Include="../stylecop.json" Link="Properties/stylecop.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
+    <PackageReference Include="Spectre.Console.Cli" />
   </ItemGroup>
 
   <ItemGroup>

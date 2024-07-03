@@ -32,14 +32,14 @@ public sealed class CosLexer : IDisposable
         return _reader.ReadByte();
     }
 
-    public ReadOnlySpan<byte> ReadBytes(int length)
+    public void ReadBytes(Span<byte> buffer)
     {
         EnsureNotDisposed();
 
-        return _reader.ReadBytes(length);
+        _reader.ReadBytes(buffer);
     }
 
-    public bool Peek([NotNullWhen(true)] out CosToken? token)
+    public bool TryPeek([NotNullWhen(true)] out CosToken? token)
     {
         EnsureNotDisposed();
 
@@ -60,7 +60,7 @@ public sealed class CosLexer : IDisposable
     {
         EnsureNotDisposed();
 
-        if (Peek(out var token))
+        if (TryPeek(out var token))
         {
             return token.Kind == kind;
         }
@@ -209,6 +209,8 @@ public sealed class CosLexer : IDisposable
         _reader.Consume('/');
 
         var accumulator = new StringBuilder();
+        Span<byte> hexBuffer = stackalloc byte[2];
+
         while (_reader.CanRead)
         {
             var current = _reader.PeekChar();
@@ -227,9 +229,8 @@ public sealed class CosLexer : IDisposable
             {
                 _reader.Consume('#');
 
-                var hex = _reader.ReadBytes(2);
-                accumulator.Append(HexUtility.FromHex(
-                    (char)hex[0], (char)hex[1]));
+                _reader.ReadBytes(hexBuffer);
+                accumulator.Append(HexUtility.FromHex((char)hexBuffer[0], (char)hexBuffer[1]));
             }
             else
             {
