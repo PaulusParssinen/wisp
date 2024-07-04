@@ -1,27 +1,25 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, IComparable<CosObjectId>
+[CosPrimitive]
+public sealed partial class CosObjectId(int number, int generation) : ICosPrimitive, IEquatable<CosObjectId>, IComparable<CosObjectId>
 {
-    public int Number { get; set; }
-    public int Generation { get; set; }
+    public int Number { get; set; } = number;
+    public int Generation { get; set; } = generation;
 
     public static CosObjectIdComparer Comparer => CosObjectIdComparer.Shared;
 
-    public CosObjectId(int number, int generation)
+    public static CosObjectId Parse(ReadOnlySpan<char> text)
     {
-        Number = number;
-        Generation = generation;
-    }
+        Span<Range> ranges = stackalloc Range[2];
 
-    public static CosObjectId Parse(string text)
-    {
-        var parts = text.Split(':', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 2)
+        var parts = text.Split(ranges, ':', StringSplitOptions.RemoveEmptyEntries);
+        if (parts == 2)
         {
+            var invariant = CultureInfo.InvariantCulture;
             return new CosObjectId(
-                int.Parse(parts[0].Trim()),
-                int.Parse(parts[1].Trim()));
+                int.Parse(text[ranges[0]].Trim(), invariant),
+                int.Parse(text[ranges[1]].Trim(), invariant));
         }
 
         throw new WispException("Could not parse object ID.");
@@ -29,20 +27,14 @@ public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, ICompa
 
     public int CompareTo(CosObjectId? other)
     {
-        if (other == null)
-        {
-            return 1;
-        }
+        if (other is null) return 1;
 
         return Number.CompareTo(other.Number);
     }
 
     public override bool Equals(object? obj)
     {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
+        if (ReferenceEquals(this, obj)) return true;
 
         if (obj is CosObjectId objectId)
         {
@@ -52,32 +44,11 @@ public sealed class CosObjectId : ICosPrimitive, IEquatable<CosObjectId>, ICompa
         return false;
     }
 
-    public bool Equals(CosObjectId? other)
-    {
-        return CosObjectIdComparer.Shared.Equals(this, other);
-    }
+    public bool Equals(CosObjectId? other) => CosObjectIdComparer.Shared.Equals(this, other);
 
-    public override int GetHashCode()
-    {
-        return CosObjectIdComparer.Shared.GetHashCode(this);
-    }
+    public override int GetHashCode() => CosObjectIdComparer.Shared.GetHashCode(this);
 
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitObjectId(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitObjectId(this, context);
-    }
-
-    public override string ToString()
-    {
-        return $"[ObjectID] {Number}:{Generation}".Trim();
-    }
+    public override string ToString() => $"[ObjectID] {Number}:{Generation}";
 }
 
 public sealed class CosObjectIdComparer : IEqualityComparer<CosObjectId>
@@ -86,22 +57,12 @@ public sealed class CosObjectIdComparer : IEqualityComparer<CosObjectId>
 
     public bool Equals(CosObjectId? x, CosObjectId? y)
     {
-        if (x == null && y == null)
-        {
-            return true;
-        }
-
-        if (x == null || y == null)
-        {
-            return false;
-        }
+        if (x is null && y is null) return true;
+        if (x is null || y is null) return false;
 
         return x.Number == y.Number &&
                x.Generation == y.Generation;
     }
 
-    public int GetHashCode(CosObjectId obj)
-    {
-        return HashCode.Combine(obj.Number, obj.Generation);
-    }
+    public int GetHashCode(CosObjectId obj) => HashCode.Combine(obj.Number, obj.Generation);
 }

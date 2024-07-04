@@ -12,10 +12,12 @@ public sealed partial class CosDocumentTests
             var document = fixture.Document;
 
             // When
-            var obj = document.Objects.Get(7, 0);
+            var success = document.Objects.TryGet(7, 0, out var obj);
 
             // Then
-            obj.ShouldNotBeNull();
+            Assert.True(success);
+            Assert.NotNull(obj);
+
             obj.Object.ShouldBeOfType<CosDictionary>().And(dict =>
             {
                 dict.Get<CosInteger>(CosNames.Count).ShouldHaveValue(2);

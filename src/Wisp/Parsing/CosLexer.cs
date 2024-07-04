@@ -1,49 +1,79 @@
+using System.Buffers;
+
 namespace Wisp;
 
-public sealed class CosLexer : IDisposable
+public sealed class CosLexer
 {
-    private readonly ByteStreamReader _reader;
-    private bool _disposed;
+    private static readonly SearchValues<byte> _lowerAsciiLetters = SearchValues.Create("abcdefghijklmnopqrstuvwxyz"u8);
 
-    public long Position => _reader.Position;
-    public long Length => _reader.Length;
-    public bool CanRead => _reader.CanRead;
+    private readonly byte[] _buffer;
+    private int _position;
 
-    public CosLexer(Stream stream)
+    private ReadOnlySpan<byte> CurrentSpan => _buffer.AsSpan(_position);
+
+    public bool CanRead => _position < _buffer.Length;
+    public long Position => _position;
+    public long Length => _buffer.Length;
+
+    public CosLexer(byte[] buffer)
     {
-        _reader = new ByteStreamReader(stream);
+        _buffer = buffer;
+        _position = 0;
     }
 
-    public void Dispose()
+    public int PeekByte() => CanRead ? _buffer[_position] : -1;
+
+    public char PeekChar() => (char)PeekByte();
+
+    public int ReadByte() => CanRead ? _buffer[_position++] : -1;
+
+    public char ReadChar() => (char)ReadByte();
+
+    public void ReadBytes(Span<byte> buffer)
     {
-        if (!_disposed)
+        if (_position + buffer.Length > _buffer.Length)
         {
-            _disposed = true;
+            throw new WispException("Exceeded stream end");
         }
+
+        _buffer.AsSpan(_position, buffer.Length).CopyTo(buffer);
+        _position += _buffer.Length;
     }
 
     public long Seek(long offset, SeekOrigin origin)
     {
-        return _reader.Seek(offset, origin);
+        switch (origin)
+        {
+            case SeekOrigin.Begin:
+                _position = (int)offset;
+                break;
+            case SeekOrigin.Current:
+                _position += (int)offset;
+                break;
+            case SeekOrigin.End:
+                _position = _buffer.Length + (int)offset;
+                break;
+            default:
+                throw new WispException("Unknown seek origin");
+        }
+
+        return _position;
     }
 
-    public int ReadByte()
-    {
-        return _reader.ReadByte();
-    }
+    public void Consume() => ReadByte();
 
-    public void ReadBytes(Span<byte> buffer)
+    public void Consume(char expected)
     {
-        EnsureNotDisposed();
-
-        _reader.ReadBytes(buffer);
+        var read = ReadByte();
+        if (read != expected)
+        {
+            throw new WispException($"Expected '{expected}' but got '{read}'.");
+        }
     }
 
     public bool TryPeek([NotNullWhen(true)] out CosToken? token)
     {
-        EnsureNotDisposed();
-
-        var position = _reader.Position;
+        var position = _position;
 
         try
         {
@@ -52,14 +82,12 @@ public sealed class CosLexer : IDisposable
         finally
         {
             // Move the cursor back to where we were
-            _reader.Seek(position, SeekOrigin.Begin);
+            Seek(position, SeekOrigin.Begin);
         }
     }
 
     public bool Check(CosTokenKind kind)
     {
-        EnsureNotDisposed();
-
         if (TryPeek(out var token))
         {
             return token.Kind == kind;
@@ -70,8 +98,6 @@ public sealed class CosLexer : IDisposable
 
     public CosToken Expect(CosTokenKind kind)
     {
-        EnsureNotDisposed();
-
         try
         {
             var token = Read();
@@ -94,8 +120,6 @@ public sealed class CosLexer : IDisposable
 
     public CosToken Read()
     {
-        EnsureNotDisposed();
-
         if (!TryRead(out var token, out var error))
         {
             throw new WispLexerException(this, $"Could not read next token from stream. Reason: {error}");
@@ -108,17 +132,16 @@ public sealed class CosLexer : IDisposable
     {
         error = null;
 
-        EnsureNotDisposed();
         EatWhitespace();
 
-        if (!_reader.CanRead)
+        if (!CanRead)
         {
             token = null;
             error = "Reached end of stream";
             return false;
         }
 
-        var current = _reader.PeekChar();
+        var current = PeekChar();
 
         if (current == '%')
         {
@@ -173,31 +196,31 @@ public sealed class CosLexer : IDisposable
 
     private void EatWhitespace()
     {
-        while (_reader.CanRead)
+        while (CanRead)
         {
-            var current = _reader.PeekChar();
+            var current = PeekChar();
             if (!current.IsPdfWhitespace())
             {
                 return;
             }
 
-            _reader.ReadByte();
+            ReadByte();
         }
     }
 
     private CosToken ReadComment()
     {
-        _reader.Consume('%');
+        Consume('%');
 
-        while (_reader.CanRead)
+        while (CanRead)
         {
-            var current = _reader.PeekChar();
+            var current = PeekChar();
             if (current.IsPdfLineBreak())
             {
                 break;
             }
 
-            _reader.ReadByte();
+            ReadByte();
         }
 
         return new CosToken(
@@ -206,14 +229,14 @@ public sealed class CosLexer : IDisposable
 
     private CosToken ReadName()
     {
-        _reader.Consume('/');
+        Consume('/');
 
         var accumulator = new StringBuilder();
         Span<byte> hexBuffer = stackalloc byte[2];
 
-        while (_reader.CanRead)
+        while (CanRead)
         {
-            var current = _reader.PeekChar();
+            var current = PeekChar();
             if (!current.IsPdfName() && !current.IsPdfSolidus())
             {
                 break;
@@ -227,14 +250,14 @@ public sealed class CosLexer : IDisposable
 
             if (current == '#')
             {
-                _reader.Consume('#');
+                Consume('#');
 
-                _reader.ReadBytes(hexBuffer);
+                ReadBytes(hexBuffer);
                 accumulator.Append(HexUtility.FromHex((char)hexBuffer[0], (char)hexBuffer[1]));
             }
             else
             {
-                accumulator.Append(_reader.ReadChar());
+                accumulator.Append(ReadChar());
             }
         }
 
@@ -245,15 +268,15 @@ public sealed class CosLexer : IDisposable
 
     private CosToken ReadStringLiteral()
     {
-        _reader.Consume('(');
+        Consume('(');
 
         var level = 0;
         var escaped = false;
         var accumulator = new List<byte>();
 
-        while (_reader.CanRead)
+        while (CanRead)
         {
-            var current = _reader.ReadByte();
+            var current = ReadByte();
 
             // Escaped new line?
             var character = (char)current;
@@ -302,11 +325,11 @@ public sealed class CosLexer : IDisposable
 
     private CosToken ReadBeginDictionaryOrHexStringLiteral()
     {
-        _reader.Consume('<');
+        Consume('<');
 
-        if (_reader.PeekChar() == '<')
+        if (PeekChar() == '<')
         {
-            _reader.Consume('<');
+            Consume('<');
             return new CosToken(CosTokenKind.BeginDictionary);
         }
 
@@ -318,18 +341,18 @@ public sealed class CosLexer : IDisposable
         var accumulator = new StringBuilder();
         while (true)
         {
-            if (!_reader.CanRead)
+            if (!CanRead)
             {
                 throw new WispLexerException(
                     this, "Hex string literal is missing trailing '>'.");
             }
 
-            var current = _reader.PeekChar();
+            var current = PeekChar();
             if (!char.IsLetter(current) && !char.IsDigit(current))
             {
                 if (current == '>')
                 {
-                    _reader.Consume('>');
+                    Consume('>');
                     break;
                 }
 
@@ -337,7 +360,7 @@ public sealed class CosLexer : IDisposable
                     this, $"Malformed hexadecimal literal. Invalid character '{current}'.");
             }
 
-            accumulator.Append(_reader.ReadChar());
+            accumulator.Append(ReadChar());
         }
 
         if (accumulator.Length % 2 != 0)
@@ -352,20 +375,20 @@ public sealed class CosLexer : IDisposable
 
     private CosToken ReadBeginArray()
     {
-        _reader.Consume('[');
+        Consume('[');
         return new CosToken(CosTokenKind.BeginArray);
     }
 
     private CosToken ReadEndArray()
     {
-        _reader.Consume(']');
+        Consume(']');
         return new CosToken(CosTokenKind.EndArray);
     }
 
     private CosToken ReadEndDictionary()
     {
-        _reader.Consume('>');
-        _reader.Consume('>');
+        Consume('>');
+        Consume('>');
         return new CosToken(CosTokenKind.EndDictionary);
     }
 
@@ -374,13 +397,13 @@ public sealed class CosLexer : IDisposable
         var accumulator = new StringBuilder();
         var encounteredPeriod = false;
 
-        while (_reader.CanRead)
+        while (CanRead)
         {
-            var current = _reader.PeekChar();
+            var current = PeekChar();
 
             if (char.IsDigit(current))
             {
-                accumulator.Append(_reader.ReadChar());
+                accumulator.Append(ReadChar());
             }
             else if (current == '-' || current == '+')
             {
@@ -390,7 +413,7 @@ public sealed class CosLexer : IDisposable
                         this, "Encountered malformed integer");
                 }
 
-                _reader.Consume();
+                Consume();
                 if (current == '-')
                 {
                     accumulator.Append('-');
@@ -405,7 +428,7 @@ public sealed class CosLexer : IDisposable
                 }
 
                 encounteredPeriod = true;
-                accumulator.Append(_reader.ReadChar());
+                accumulator.Append(ReadChar());
             }
             else
             {
@@ -431,59 +454,28 @@ public sealed class CosLexer : IDisposable
 
     private CosToken ReadKeyword()
     {
-        var accumulator = new StringBuilder();
-        while (_reader.CanRead)
-        {
-            var current = _reader.PeekChar();
-            if (!char.IsLetter(current))
-            {
-                break;
-            }
+        int endOfKeywordIndex = CurrentSpan.IndexOfAnyExceptInRange((byte)'a', (byte)'z');
 
-            accumulator.Append(_reader.ReadChar());
-        }
+        var keywordSpan = CurrentSpan.Slice(0, endOfKeywordIndex);
+        _position += endOfKeywordIndex;
 
-        var keyword = accumulator.ToString();
-        switch (keyword)
+        return keywordSpan.Length switch
         {
-            case "true":
-                return new CosToken(CosTokenKind.Boolean, "true");
-            case "false":
-                return new CosToken(CosTokenKind.Boolean, "false");
-            case "trailer":
-                return new CosToken(CosTokenKind.Trailer);
-            case "obj":
-                return new CosToken(CosTokenKind.BeginObject);
-            case "endobj":
-                return new CosToken(CosTokenKind.EndObject);
-            case "stream":
-                return new CosToken(CosTokenKind.BeginStream);
-            case "endstream":
-                return new CosToken(CosTokenKind.EndStream);
-            case "null":
-                return new CosToken(CosTokenKind.Null);
-            case "R":
-                return new CosToken(CosTokenKind.Reference);
-            case "startxref":
-                return new CosToken(CosTokenKind.StartXRef);
-            case "xref":
-                return new CosToken(CosTokenKind.XRef);
-            case "f":
-                return new CosToken(CosTokenKind.XRefFree);
-            case "n":
-                return new CosToken(CosTokenKind.XRefIndirect);
-            default:
-                throw new WispLexerException(
-                    this, $"Unknown token '{keyword}'");
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureNotDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().FullName);
-        }
+            4 when keywordSpan.SequenceEqual("true"u8) => new CosToken(CosTokenKind.Boolean, "true"),
+            5 when keywordSpan.SequenceEqual("false"u8) => new CosToken(CosTokenKind.Boolean, "false"),
+            7 when keywordSpan.SequenceEqual("trailer"u8) => new CosToken(CosTokenKind.Trailer),
+            3 when keywordSpan.SequenceEqual("obj"u8) => new CosToken(CosTokenKind.BeginObject),
+            6 when keywordSpan.SequenceEqual("endobj"u8) => new CosToken(CosTokenKind.EndObject),
+            6 when keywordSpan.SequenceEqual("stream"u8) => new CosToken(CosTokenKind.BeginStream),
+            9 when keywordSpan.SequenceEqual("endstream"u8) => new CosToken(CosTokenKind.EndStream),
+            4 when keywordSpan.SequenceEqual("null"u8) => new CosToken(CosTokenKind.Null),
+            1 when keywordSpan.SequenceEqual("R"u8) => new CosToken(CosTokenKind.Reference),
+            9 when keywordSpan.SequenceEqual("startxref"u8) => new CosToken(CosTokenKind.StartXRef),
+            4 when keywordSpan.SequenceEqual("xref"u8) => new CosToken(CosTokenKind.XRef),
+            1 when keywordSpan.SequenceEqual("f"u8) => new CosToken(CosTokenKind.XRefFree),
+            1 when keywordSpan.SequenceEqual("n"u8) => new CosToken(CosTokenKind.XRefIndirect),
+            
+            _ => throw new WispLexerException(this, $"Unknown token"),
+        };
     }
 }

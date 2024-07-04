@@ -11,7 +11,7 @@ public sealed class CosWriterTests
         var fixture = new CosWriterFixture();
 
         // When
-        fixture.Write(new CosBoolean(value));
+        fixture.Write(value ? CosBoolean.True : CosBoolean.False);
 
         // Then
         fixture.Result.ShouldBe(expected);
@@ -38,11 +38,10 @@ public sealed class CosWriterTests
 
         // When
         fixture.Write(new CosArray(
-            new[]
-            {
-                new CosBoolean(true),
-                new CosBoolean(false),
-            }));
+            [
+                CosBoolean.True,
+                CosBoolean.False,
+            ]));
 
         // Then
         fixture.Result.ShouldBe("[true false]");

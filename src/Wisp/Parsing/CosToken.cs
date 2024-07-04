@@ -20,30 +20,23 @@ public static class CosTokenExtensions
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.Kind != CosTokenKind.Integer)
+        if (token.Kind is not CosTokenKind.Integer)
         {
             throw new WispException("Cannot parse token since it's not an integer.");
         }
 
-        return token.Text == null
-            ? 0
-            : int.Parse(token.Text, CultureInfo.InvariantCulture);
+        return token.Text is null ? 0 : int.Parse(token.Text, CultureInfo.InvariantCulture);
     }
 
     public static double ParseDouble(this CosToken token)
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        if (token.Kind != CosTokenKind.Real)
+        if (token.Kind is not CosTokenKind.Real)
         {
             throw new WispException("Cannot parse token since it's not a real number.");
         }
 
-        if (token.Text == null)
-        {
-            return 0;
-        }
-
-        return double.Parse(token.Text, CultureInfo.InvariantCulture);
+        return token.Text is null ? 0 : double.Parse(token.Text, CultureInfo.InvariantCulture);
     }
 }

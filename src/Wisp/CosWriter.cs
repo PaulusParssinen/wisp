@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace Wisp;
 
 public sealed class CosWriter : IDisposable
@@ -13,7 +10,7 @@ public sealed class CosWriter : IDisposable
 
     public CosWriter(Stream stream, CosWriterSettings? settings)
     {
-        _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+        _stream = stream;
         _settings = settings ?? new CosWriterSettings();
     }
 
@@ -29,15 +26,9 @@ public sealed class CosWriter : IDisposable
 
     public void WriteByte(byte value) => _stream.WriteByte(value);
 
-    public void WriteByte(char value)
-    {
-        _stream.WriteByte((byte)value);
-    }
+    public void WriteByte(char value) => _stream.WriteByte((byte)value);
 
-    public void WriteBytes(ReadOnlySpan<byte> value)
-    {
-        _stream.Write(value);
-    }
+    public void WriteBytes(ReadOnlySpan<byte> value) => _stream.Write(value);
 
     [SkipLocalsInit]
     public void WriteLiteral<T>(T value, ReadOnlySpan<char> format = default) where T : unmanaged, IUtf8SpanFormattable
@@ -217,7 +208,7 @@ public sealed class CosWriter : IDisposable
             foreach (var (_, _, last, number) in numbers.Enumerate())
             {
                 var embedded = obj.GetObject(context.Document.Objects, new CosObjectId(number, 0));
-                if (embedded == null)
+                if (embedded is null)
                 {
                     throw new WispException("Could not get object stream object during write");
                 }

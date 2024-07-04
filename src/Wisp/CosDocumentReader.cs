@@ -8,10 +8,15 @@ public static class CosDocumentReader
 
         settings ??= new CosReaderSettings();
 
+        // TODO:
+        var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        var streamBytes = ms.ToArray();
+
         // Create the parser from the stream.
         // We will keep this parser around for the remainder of the created document.
         // The parser is responsible for reading objects from disk (or memory).
-        var parser = new CosParser(stream);
+        var parser = new CosParser(streamBytes);
 
         // Read the header
         var version = CosHeaderReader.Read(parser);
@@ -34,15 +39,15 @@ public static class CosDocumentReader
 
             foreach (var group in streams)
             {
-                var cosObject = objects.Get(group.Key, CosResolveFlags.NoCache);
-                if (cosObject?.Object is CosObjectStream objectStream)
+                if (objects.TryGet(group.Key, CosResolveFlags.NoCache, out var cosObject) && 
+                    cosObject.Object is CosObjectStream objectStream)
                 {
                     var objectIds = objectStream.GetObjectIds();
                     foreach (var objNumber in objectIds)
                     {
                         var objId = new CosObjectId(objNumber, 0);
                         var obj = objectStream.GetObject(objects, objId);
-                        if (obj != null)
+                        if (obj is not null)
                         {
                             // Add the object to the cache
                             objects.Set(obj);
@@ -63,20 +68,17 @@ public static class CosDocumentReader
 
         // Get the document information
         var info = default(CosInfo);
-        if (trailer.Info != null)
+        if (trailer.Info is not null)
         {
-            var infoObj = objects.Get(trailer.Info);
-            if (infoObj == null)
+            if (!objects.TryGet(trailer.Info, out var infoObj))
             {
                 // TODO: We should remove the info object from the trailer
-                throw new WispException(
-                    "Info object was specified but did not exist");
+                throw new WispException("Info object was specified but did not exist");
             }
 
             if (infoObj.Object is not CosDictionary)
             {
-                throw new WispException(
-                    "Info object was expected to be a dictionary, but was not");
+                throw new WispException("Info object was expected to be a dictionary, but was not");
             }
 
             info = new CosInfo(infoObj);

@@ -1,32 +1,11 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosObject : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosObject(CosObjectId id, ICosPrimitive obj) : ICosPrimitive
 {
-    public CosObjectId Id { get; }
-    public ICosPrimitive Object { get; }
+    public CosObjectId Id { get; } = id;
+    public ICosPrimitive Object { get; } = obj;
 
-    public CosObject(CosObjectId id, ICosPrimitive obj)
-    {
-        Id = id ?? throw new ArgumentNullException(nameof(id));
-        Object = obj ?? throw new ArgumentNullException(nameof(obj));
-    }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitObject(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitObject(this, context);
-    }
-
-    public override string ToString()
-    {
-        var kind = Object.GetType()?.Name ?? "Unknown";
-        return $"[Object] {Id.Number}:{Id.Generation} ({kind})";
-    }
+    public override string ToString() => $"[Object] {Id.Number}:{Id.Generation} ({Object})";
 }

@@ -16,8 +16,7 @@ public class CosDocumentFixture
 
         public Simple(CosReaderSettings? settings = null)
             : base(Path, settings)
-        {
-        }
+        { }
 
         public static CosDocumentFixture Create(CosReaderSettings? settings = null)
         {
@@ -29,7 +28,6 @@ public class CosDocumentFixture
     {
         public XRefStream()
             : base("Wisp.Tests/Data/XRefStream.pdf", null)
-        {
-        }
+        { }
     }
 }

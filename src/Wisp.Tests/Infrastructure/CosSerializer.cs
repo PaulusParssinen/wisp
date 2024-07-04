@@ -34,7 +34,7 @@ public static class CosSerializer
 
                             if (xref is CosIndirectXRef indirect)
                             {
-                                if (indirect.Position != null)
+                                if (indirect.Position is not null)
                                 {
                                     writer.WriteAttribute("Position", indirect.Position);
                                 }

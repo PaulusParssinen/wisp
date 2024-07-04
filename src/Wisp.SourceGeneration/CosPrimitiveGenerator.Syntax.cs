@@ -18,7 +18,7 @@ public sealed partial class CosPrimitiveGenerator
 
         writer.WriteGeneratedAttributes(nameof(CosPrimitiveGenerator));
 
-        writer.WriteLine($"public sealed partial class {cosPrimitive.Name} : global::Wisp.ICosVisitable");
+        writer.WriteLine($"public partial class {cosPrimitive.Name} : global::Wisp.ICosVisitable");
 
         using (writer.WriteBlock())
         {

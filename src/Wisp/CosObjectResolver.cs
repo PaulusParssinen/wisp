@@ -1,3 +1,5 @@
+using System.Reflection.Metadata.Ecma335;
+
 namespace Wisp;
 
 internal sealed class CosObjectResolver : IDisposable
@@ -7,36 +9,32 @@ internal sealed class CosObjectResolver : IDisposable
 
     public CosObjectResolver(CosParser parser, CosXRefTable xRefTable)
     {
-        _parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        _xRefTable = xRefTable ?? throw new ArgumentNullException(nameof(xRefTable));
+        _parser = parser;
+        _xRefTable = xRefTable;
     }
 
     public void Dispose()
-    {
-        _parser.Dispose();
-    }
+    { }
 
-    public (CosObject? Owner, CosObject Object)? GetObject(ICosObjectCache cache, CosObjectId id)
+    public bool TryGetObject(ICosObjectCache cache, CosObjectId id, out CosObject? owner, [NotNullWhen(true)] out CosObject? obj)
     {
-        ArgumentNullException.ThrowIfNull(cache);
-        ArgumentNullException.ThrowIfNull(id);
+        owner = obj = null;
 
         switch (_xRefTable.GetXRef(id))
         {
             case null:
-                return null;
+                return false;
 
             case CosStreamXRef streamXref:
                 // Get the xref to the stream object
-                var streamObjectXRef = _xRefTable.GetXRef(streamXref.StreamId) as CosIndirectXRef;
-                if (streamObjectXRef == null)
+                if (_xRefTable.GetXRef(streamXref.StreamId) is not CosIndirectXRef streamObjectXRef)
                 {
                     throw new WispObjectResolveException(
                         _parser, "Could not get xref to stream object");
                 }
 
                 // Ensure that the stream has a position
-                if (streamObjectXRef.Position == null)
+                if (streamObjectXRef.Position is null)
                 {
                     throw new WispObjectResolveException(
                         _parser, "Object in object stream should exist in cache");
@@ -44,54 +42,46 @@ internal sealed class CosObjectResolver : IDisposable
 
                 // Is the stream itself in the cache?
                 // Don't try to resolve the stream object; that will lead to a stack overflow
-                var ownerObject = cache.Get(streamObjectXRef.Id, CosResolveFlags.NoResolve);
-                if (ownerObject == null)
+                if (!cache.TryGet(streamObjectXRef.Id, CosResolveFlags.NoResolve, out var ownerObject))
                 {
                     // Parse the object stream
                     _parser.Seek(streamObjectXRef.Position.Value, SeekOrigin.Begin);
                     ownerObject = _parser.Parse() as CosObject;
-                    if (ownerObject == null)
+                    if (ownerObject is null)
                     {
-                        throw new WispObjectResolveException(
-                            _parser, "Could not find an object at the stream position");
+                        throw new WispObjectResolveException(_parser, "Could not find an object at the stream position");
                     }
                 }
 
                 // Ensure the primitive is an object stream
-                var objectStream = ownerObject.Object as CosObjectStream;
-                if (objectStream == null)
+                if (ownerObject.Object is not CosObjectStream objectStream)
                 {
-                    throw new WispObjectResolveException(
-                        _parser, "Object was not an object stream");
+                    throw new WispObjectResolveException(_parser, "Object was not an object stream");
                 }
 
                 // Get the object within the stream
-                var objectStreamItem = objectStream.GetObjectByIndex(cache, streamXref.Index);
-                if (objectStreamItem == null)
-                {
-                    throw new WispObjectResolveException(
-                        _parser, $"Could not get object in object stream at index {streamXref.Index}");
-                }
-
-                return (ownerObject, objectStreamItem);
+                var objectStreamItem = objectStream.GetObjectByIndex(cache, streamXref.Index) 
+                    ?? throw new WispObjectResolveException(_parser, $"Could not get object in object stream at index {streamXref.Index}");
+                
+                owner = ownerObject;
+                obj = objectStreamItem;
+                return true;
 
             case CosIndirectXRef indirectXRef:
-                if (indirectXRef.Position == null)
+                if (indirectXRef.Position is null)
                 {
-                    throw new WispObjectResolveException(
-                        _parser, "Object should exist in cache (no position)");
+                    throw new WispObjectResolveException(_parser, "Object should exist in cache (no position)");
                 }
 
                 _parser.Seek(indirectXRef.Position.Value, SeekOrigin.Begin);
-                var result = _parser.Parse() as CosObject;
-                if (result == null)
+                if (_parser.Parse() is not CosObject resultObj)
                 {
-                    return null;
+                    return false;
                 }
-
-                return (null, result);
+                obj = resultObj;
+                return true;
             default:
-                return null;
+                return false;
         }
     }
 }

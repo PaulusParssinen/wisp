@@ -12,7 +12,7 @@ public static class CosTrailerReader
         {
             // Find where the xref table start
             var xrefStart = FindXrefStart(parser);
-            if (xrefStart == null)
+            if (xrefStart is null)
             {
                 throw new WispException("Could not find xref start");
             }
@@ -31,7 +31,7 @@ public static class CosTrailerReader
                 trailer = readTrailer;
 
                 var prev = trailer.Get<CosInteger>(CosNames.Prev);
-                if (prev == null)
+                if (prev is null)
                 {
                     break;
                 }

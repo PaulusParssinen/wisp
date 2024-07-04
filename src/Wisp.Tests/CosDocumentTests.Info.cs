@@ -2,20 +2,13 @@ namespace Wisp.Tests;
 
 public sealed partial class CosDocumentTests
 {
-    public sealed class Info : IClassFixture<CosDocumentFixture.XRefStream>
+    public sealed class Info(CosDocumentFixture.XRefStream fixture) : IClassFixture<CosDocumentFixture.XRefStream>
     {
-        private readonly CosDocumentFixture.XRefStream _fixture;
-
-        public Info(CosDocumentFixture.XRefStream fixture)
-        {
-            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-        }
-
         [Fact]
         public void Should_Read_Info_Properties_Correctly()
         {
             // Given, When
-            var obj = _fixture.Document.Info;
+            var obj = fixture.Document.Info;
 
             // Then
             obj.ShouldNotBeNull();

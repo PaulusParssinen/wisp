@@ -15,7 +15,7 @@ public static class EmbeddedResourceReader
 
         using (var stream = assembly.GetManifestResourceStream(resourceName))
         {
-            if (stream == null)
+            if (stream is null)
             {
                 throw new InvalidOperationException("Could not load manifest resource stream.");
             }

@@ -1,62 +1,48 @@
 namespace Wisp;
 
-internal sealed class CosObjectCache : ICosObjectCache
+internal sealed class CosObjectCache(CosXRefTable table, CosObjectResolver? resolver) : ICosObjectCache
 {
-    private readonly CosXRefTable _table;
-    private readonly CosObjectResolver? _resolver;
-    private readonly Dictionary<CosObjectId, CosObject> _objects;
+    private readonly CosXRefTable _table = table;
+    private readonly CosObjectResolver? _resolver = resolver;
+    private readonly Dictionary<CosObjectId, CosObject> _objects = new(CosObjectIdComparer.Shared);
 
-    public CosObjectCache(CosXRefTable table, CosObjectResolver? resolver)
-    {
-        _table = table ?? throw new ArgumentNullException(nameof(table));
-        _resolver = resolver;
-        _objects = new Dictionary<CosObjectId, CosObject>(CosObjectIdComparer.Shared);
-    }
+    public bool Contains(CosObjectId id) => _objects.ContainsKey(id);
 
-    public bool Contains(CosObjectId id)
+    public bool TryGet(CosObjectId id, [NotNullWhen(true)] out CosObject? obj) => TryGet(id, CosResolveFlags.None, out obj);
+    public bool TryGet(CosObjectId id, CosResolveFlags flags, [NotNullWhen(true)] out CosObject? obj)
     {
-        return _objects.ContainsKey(id);
-    }
+        obj = null;
 
-    public CosObject? Get(CosObjectId id, CosResolveFlags flags = CosResolveFlags.None)
-    {
         var shouldInvalidate = flags.HasFlag(CosResolveFlags.Invalidate);
         if (!shouldInvalidate)
         {
             // Try get the object from caches
-            if (_objects.TryGetValue(id, out var obj))
-            {
-                return obj;
-            }
+            if (!_objects.TryGetValue(id, out obj))
+                return false;
         }
 
-        // Should we try to resolve the object from the
-        // PDF document stream?
+        // Should we try to resolve the object from the PDF document stream?
         var shouldResolve = !flags.HasFlag(CosResolveFlags.NoResolve);
-        if (shouldResolve && _resolver != null)
+        if (shouldResolve && _resolver is not null)
         {
-            var result = _resolver?.GetObject(this, id);
-            if (result == null)
-            {
-                return null;
-            }
+            if (!_resolver.TryGetObject(this, id, out var owner, out obj))
+                return false;
 
             // Should we add the resolved object to the cache?
             var shouldCache = !flags.HasFlag(CosResolveFlags.NoCache);
             if (shouldCache)
             {
-                _objects.TryAdd(id, result.Value.Object);
+                _objects.TryAdd(id, obj);
 
-                if (result.Value.Owner != null)
+                if (owner is not null)
                 {
-                    _objects.TryAdd(result.Value.Owner.Id, result.Value.Owner);
+                    _objects.TryAdd(owner.Id, owner);
                 }
             }
-
-            return result.Value.Object;
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     public void Set(CosObject obj)
@@ -69,35 +55,17 @@ internal sealed class CosObjectCache : ICosObjectCache
         }
     }
 
-    public IEnumerator<CosObject> GetEnumerator()
-    {
-        return new Enumerator(this, _table);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    public IEnumerator<CosObject> GetEnumerator() => new Enumerator(this, _table);
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     private sealed class Enumerator : IEnumerator<CosObject>
     {
         private readonly CosObjectCache _collection;
         private readonly CosXRefTable _table;
-        private IEnumerator<CosXRef> _source;
+        private IEnumerator<ICosXRef> _source;
         private CosObject? _current;
 
-        public CosObject Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    throw new InvalidOperationException("Current cannot be used in the current state");
-                }
-
-                return _current;
-            }
-        }
+        public CosObject Current => _current ?? throw new InvalidOperationException("Current cannot be used in the current state");
 
         object IEnumerator.Current => Current;
 
@@ -105,15 +73,12 @@ internal sealed class CosObjectCache : ICosObjectCache
             CosObjectCache collection,
             CosXRefTable table)
         {
-            _collection = collection ?? throw new ArgumentNullException(nameof(collection));
-            _table = table ?? throw new ArgumentNullException(nameof(table));
+            _collection = collection;
+            _table = table;
             _source = _table.GetEnumerator();
         }
 
-        public void Dispose()
-        {
-            _source.Dispose();
-        }
+        public void Dispose() => _source.Dispose();
 
         public void Reset()
         {
@@ -125,16 +90,12 @@ internal sealed class CosObjectCache : ICosObjectCache
         {
             while (true)
             {
-                if (!_source.MoveNext())
-                {
-                    return false;
-                }
+                if (!_source.MoveNext()) return false;
 
                 var current = _source.Current;
-                if (current is CosIndirectXRef)
+                if (current is CosIndirectXRef xref)
                 {
-                    var obj = _collection.Get(current.Id, CosResolveFlags.NoCache);
-                    if (obj != null)
+                    if (_collection.TryGet(xref.Id, CosResolveFlags.NoCache, out var obj))
                     {
                         _current = obj;
                         return true;
@@ -174,19 +135,19 @@ public enum CosResolveFlags
 public interface ICosObjectCache : IEnumerable<CosObject>
 {
     bool Contains(CosObjectId id);
-    CosObject? Get(CosObjectId id, CosResolveFlags flags = CosResolveFlags.None);
+    bool TryGet(CosObjectId id, CosResolveFlags flags, [NotNullWhen(true)] out CosObject? obj);
     void Set(CosObject obj);
 }
 
 public static class ICosObjectCacheExtensions
 {
-    public static CosObject? Get(this ICosObjectCache collection, int number, int generation, CosResolveFlags flags = CosResolveFlags.None)
+    public static bool TryGet(this ICosObjectCache collection, int number, int generation, [NotNullWhen(true)] out CosObject? obj, CosResolveFlags flags = CosResolveFlags.None)
     {
-        return collection.Get(new CosObjectId(number, generation), flags);
+        return collection.TryGet(new CosObjectId(number, generation), flags, out obj);
     }
 
-    public static CosObject? Get(this ICosObjectCache collection, CosObjectReference reference, CosResolveFlags flags = CosResolveFlags.None)
+    public static bool TryGet(this ICosObjectCache collection, CosObjectReference reference, [NotNullWhen(true)] out CosObject? obj, CosResolveFlags flags = CosResolveFlags.None)
     {
-        return collection.Get(new CosObjectId(reference.Id.Number, reference.Id.Generation), flags);
+        return collection.TryGet(new CosObjectId(reference.Id.Number, reference.Id.Generation), flags, out obj);
     }
 }

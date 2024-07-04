@@ -28,111 +28,85 @@ public sealed partial class CosObjectStream : ICosPrimitive
         {
             if (!_offsetsById.ContainsKey(id.Number))
             {
-                throw new WispException(
-                    $"Object #{id.Number} does not exist within object stream");
+                throw new WispException($"Object #{id.Number} does not exist within object stream");
             }
 
             if (_unpackedObjects.Contains(id.Number))
             {
                 // Ok, we know the ID, does this object exist in the cache?
                 // Try to get it without resolving (since we don't want a stack overflow).
-                var obj = cache.Get(id, CosResolveFlags.NoResolve);
-                if (obj != null)
+                if (cache.TryGet(id, CosResolveFlags.NoResolve, out var cachedObj))
                 {
-                    return obj;
+                    return cachedObj;
                 }
             }
         }
 
-        var bytes = _stream.GetUnfilteredData();
-        if (bytes == null)
+        var bytes = _stream.GetUnfilteredData() ?? throw new WispException("Stream contained no data");
+        
+        var parser = new CosParser(bytes, isStreamObject: true);
+        EnsureOffsetsHaveBeenPopulated(parser);
+
+        // Ensure the object exist within the stream
+        if (!_offsetsById.TryGetValue(id.Number, out var offset))
         {
-            throw new WispException("Stream contained no data");
+            throw new WispException($"Object #{id.Number} does not exist within object stream");
         }
 
-        using (var stream = new MemoryStream(bytes))
-        {
-            var parser = new CosParser(stream, true);
-            EnsureOffsetsHaveBeenPopulated(parser);
+        // Read the object at the correct offset
+        parser.Seek(offset, SeekOrigin.Begin);
+        var primitive = parser.Parse();
+        var obj = new CosObject(id, primitive);
+        _unpackedObjects.Add(id.Number);
 
-            // Ensure the object exist within the stream
-            if (!_offsetsById.TryGetValue(id.Number, out var offset))
-            {
-                throw new WispException(
-                    $"Object #{id.Number} does not exist within object stream");
-            }
-
-            // Read the object at the correct offset
-            parser.Seek(offset, SeekOrigin.Begin);
-            var primitive = parser.Parse();
-            var obj = new CosObject(id, primitive);
-            _unpackedObjects.Add(id.Number);
-
-            return obj;
-        }
+        return obj;
     }
 
     public CosObject GetObjectByIndex(ICosObjectCache cache, int index)
     {
-        var bytes = _stream.GetUnfilteredData();
-        if (bytes == null)
+        var bytes = _stream.GetUnfilteredData() ?? throw new WispException("Stream contained no data");
+
+        var parser = new CosParser(bytes, isStreamObject: true);
+        EnsureOffsetsHaveBeenPopulated(parser);
+
+        if (index >= _offsetsByIndex.Count)
         {
-            throw new WispException("Stream contained no data");
+            throw new WispException(
+                $"Object with index {index} does not exist within object stream");
         }
 
-        using (var stream = new MemoryStream(bytes))
+        // Read the object at the correct offset
+        var (number, offset) = _offsetsByIndex[index];
+        var id = new CosObjectId(number, 0);
+
+        // Consider this object to be unpacked
+        // Just in case it's already been cached.
+        _unpackedObjects.Add(id.Number);
+
+        // Ok, we know the ID, does this object exist in the cache?
+        // Try to get it without resolving (since we don't want a stack overflow).
+        if (cache.TryGet(id, CosResolveFlags.NoResolve, out var obj))
         {
-            var parser = new CosParser(stream, true);
-            EnsureOffsetsHaveBeenPopulated(parser);
-
-            if (index >= _offsetsByIndex.Count)
-            {
-                throw new WispException(
-                    $"Object with index {index} does not exist within object stream");
-            }
-
-            // Read the object at the correct offset
-            var (number, offset) = _offsetsByIndex[index];
-            var id = new CosObjectId(number, 0);
-
-            // Consider this object to be unpacked
-            // Just in case it's already been cached.
-            _unpackedObjects.Add(id.Number);
-
-            // Ok, we know the ID, does this object exist in the cache?
-            // Try to get it without resolving (since we don't want a stack overflow).
-            var obj = cache.Get(id, CosResolveFlags.NoResolve);
-            if (obj != null)
-            {
-                return obj;
-            }
-
-            // Find the object and parse it
-            parser.Seek(offset, SeekOrigin.Begin);
-            var primitive = parser.Parse();
-            obj = new CosObject(id, primitive);
-
             return obj;
         }
+
+        // Find the object and parse it
+        parser.Seek(offset, SeekOrigin.Begin);
+        var primitive = parser.Parse();
+        obj = new CosObject(id, primitive);
+
+        return obj;
     }
 
     public CosObjectId GetObjectIdByIndex(int index)
     {
-        var bytes = _stream.GetUnfilteredData();
-        if (bytes == null)
-        {
-            throw new WispException("Stream contained no data");
-        }
-
+        var bytes = _stream.GetUnfilteredData() ?? throw new WispException("Stream contained no data");
         if (!_unpacked)
         {
-            using (var stream = new MemoryStream(bytes))
-            {
-                var parser = new CosParser(stream, true);
-                EnsureOffsetsHaveBeenPopulated(parser);
+            var parser = new CosParser(bytes, isStreamObject: true);
+            EnsureOffsetsHaveBeenPopulated(parser);
 
-                return new CosObjectId(_offsetsByIndex[index].Id, 0);
-            }
+            return new CosObjectId(_offsetsByIndex[index].Id, 0);
         }
 
         return new CosObjectId(_offsetsByIndex[index].Id, 0);
@@ -140,21 +114,13 @@ public sealed partial class CosObjectStream : ICosPrimitive
 
     internal List<int> GetObjectIds()
     {
-        var bytes = _stream.GetUnfilteredData();
-        if (bytes == null)
-        {
-            throw new WispException("Object stream contained no data");
-        }
-
+        var bytes = _stream.GetUnfilteredData() ?? throw new WispException("Object stream contained no data");
         if (!_unpacked)
         {
-            using (var stream = new MemoryStream(bytes))
-            {
-                var parser = new CosParser(stream, true);
-                EnsureOffsetsHaveBeenPopulated(parser);
+            var parser = new CosParser(bytes, isStreamObject: true);
+            EnsureOffsetsHaveBeenPopulated(parser);
 
-                return _offsetsById.Keys.ToList();
-            }
+            return _offsetsById.Keys.ToList();
         }
 
         return _offsetsById.Keys.ToList();

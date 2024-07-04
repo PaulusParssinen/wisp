@@ -1,7 +1,8 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosStream : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosStream : ICosPrimitive
 {
     private byte[] _data;
 
@@ -13,7 +14,7 @@ public sealed class CosStream : ICosPrimitive
 
     public CosStream(CosDictionary dictionary, byte[] data)
     {
-        _data = data ?? throw new ArgumentNullException(nameof(data));
+        _data = data;
 
         Dictionary = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
         if (!Dictionary.ContainsKey(CosNames.Length))
@@ -67,18 +68,6 @@ public sealed class CosStream : ICosPrimitive
         Dictionary.Set(CosNames.Filter, null);
         Dictionary.Set(CosNames.DecodeParms, decodeParameters);
         Dictionary.Set(CosNames.Length, new CosInteger(data?.Length ?? 0));
-    }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitStream(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitStream(this, context);
     }
 
     public override string ToString() => $"[Stream] Length = {Length}";

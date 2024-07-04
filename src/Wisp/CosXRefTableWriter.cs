@@ -42,7 +42,7 @@ internal static class CosXRefTableWriter
         CosObjectId[] ids,
         Dictionary<CosObjectId, long> positions)
     {
-        var encoded = new List<CosXRef>();
+        var encoded = new List<ICosXRef>();
         foreach (var id in ids)
         {
             var xref = xRefTable.GetXRef(id) ?? 
@@ -67,7 +67,7 @@ internal static class CosXRefTableWriter
         {
             if (xref is CosIndirectXRef indirect)
             {
-                if (indirect.Position == null)
+                if (indirect.Position is null)
                 {
                     throw new WispException("Position should no able to be null for indirect object");
                 }
@@ -146,7 +146,7 @@ internal static class CosXRefTableWriter
 
             static void UpdateBestFit(int value, ref int? best)
             {
-                if (best == null)
+                if (best is null)
                 {
                     best = value;
                 }

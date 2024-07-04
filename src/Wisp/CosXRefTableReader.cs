@@ -150,7 +150,7 @@ public static class CosXRefTableReader
     {
         var size = stream.Dictionary.Get<CosInteger>(CosNames.Size)?.Value ?? throw new WispException("Stream xref table did not have size");
         var indexArray = stream.Dictionary.Get<CosArray>(CosNames.Index);
-        if (indexArray == null)
+        if (indexArray is null)
         {
             indexArray =
             [

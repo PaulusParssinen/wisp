@@ -4,12 +4,12 @@ namespace Wisp;
 [CosPrimitive]
 public sealed partial class CosBoolean : ICosPrimitive
 {
+    public static CosBoolean True { get; } = new CosBoolean(true);
+    public static CosBoolean False { get; } = new CosBoolean(false);
+
     public bool Value { get; }
 
-    public CosBoolean(bool value)
-    {
-        Value = value;
-    }
+    private CosBoolean(bool value) => Value = value;
 
     public override string ToString() => $"[Boolean] {Value}";
 }

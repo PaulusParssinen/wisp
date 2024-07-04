@@ -1,6 +1,6 @@
 namespace Wisp;
 
-public sealed class CosParser : IDisposable
+public sealed class CosParser
 {
     private readonly CosLexer _lexer;
     private readonly bool _isStreamObject;
@@ -10,18 +10,11 @@ public sealed class CosParser : IDisposable
     public bool CanRead => _lexer.CanRead;
 
     public CosParser(
-        Stream stream,
+        byte[] buffer,
         bool isStreamObject = false)
     {
-        ArgumentNullException.ThrowIfNull(stream);
-
-        _lexer = new CosLexer(stream);
+        _lexer = new CosLexer(buffer);
         _isStreamObject = isStreamObject;
-    }
-
-    public void Dispose()
-    {
-        _lexer.Dispose();
     }
 
     public long Seek(long offset, SeekOrigin origin)
@@ -69,17 +62,14 @@ public sealed class CosParser : IDisposable
             CosTokenKind.Name => ParseName(),
             CosTokenKind.BeginDictionary => ParseDictionary(),
             CosTokenKind.BeginArray => ParseArray(),
-            _ => throw new WispParserException(
-                this, $"Unexpected token {token.Kind} encountered"),
+            _ => throw new WispParserException(this, $"Unexpected token {token.Kind} encountered"),
         };
     }
 
     private ICosPrimitive ParseBoolean()
     {
         var token = _lexer.Expect(CosTokenKind.Boolean);
-        return (token.Text == "true")
-            ? new CosBoolean(true)
-            : new CosBoolean(false);
+        return token.Text == "true" ? CosBoolean.True : CosBoolean.False;
     }
 
     private ICosPrimitive ParseInteger()
@@ -157,7 +147,7 @@ public sealed class CosParser : IDisposable
         }
 
         var token = _lexer.Expect(CosTokenKind.StringLiteral);
-        if (token.Lexeme == null)
+        if (token.Lexeme is null)
         {
             throw new WispParserException(
                 this, "String literal token had no byte content");
@@ -230,7 +220,7 @@ public sealed class CosParser : IDisposable
 
         // Is there a stream as well?
         var stream = ParseStream(result);
-        if (stream != null)
+        if (stream is not null)
         {
             var type = result.Get<CosName>(CosNames.Type);
             if (type?.Equals(CosNames.ObjStm) == true)

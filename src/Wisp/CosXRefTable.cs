@@ -1,33 +1,22 @@
 namespace Wisp;
 
-public sealed class CosXRefTable : IEnumerable<CosXRef>
+public sealed class CosXRefTable : IEnumerable<ICosXRef>
 {
-    private readonly Dictionary<CosObjectId, CosXRef> _lookup;
-    private readonly List<CosXRef> _references;
+    private readonly Dictionary<CosObjectId, ICosXRef> _lookup;
+    private readonly List<ICosXRef> _references;
     private int _highestId;
 
     public CosXRefTable()
     {
-        _lookup = new Dictionary<CosObjectId, CosXRef>(new CosObjectIdComparer());
-        _references = new List<CosXRef>();
+        _lookup = new Dictionary<CosObjectId, ICosXRef>(CosObjectIdComparer.Shared);
+        _references = [];
     }
 
-    public CosObjectId GetNextId()
-    {
-        return new CosObjectId(++_highestId, 0);
-    }
+    public CosObjectId GetNextId() => new CosObjectId(++_highestId, 0);
 
-    public CosXRef? GetXRef(CosObjectId key)
-    {
-        return _lookup.GetValueOrDefault(key);
-    }
+    public ICosXRef? GetXRef(CosObjectId key) => _lookup.GetValueOrDefault(key);
 
-    public bool Contains(CosObjectId id)
-    {
-        ArgumentNullException.ThrowIfNull(id);
-
-        return _lookup.ContainsKey(id);
-    }
+    public bool Contains(CosObjectId id) => _lookup.ContainsKey(id);
 
     internal CosXRefTable Clone()
     {
@@ -58,7 +47,7 @@ public sealed class CosXRefTable : IEnumerable<CosXRef>
         return result;
     }
 
-    internal bool Add(CosXRef reference)
+    internal bool Add(ICosXRef reference)
     {
         ArgumentNullException.ThrowIfNull(reference);
 
@@ -80,7 +69,7 @@ public sealed class CosXRefTable : IEnumerable<CosXRef>
     internal bool Remove(CosObjectId id)
     {
         var reference = _references.FirstOrDefault(x => x.Id.Equals(id));
-        if (reference != null)
+        if (reference is not null)
         {
             _references.Remove(reference);
             _lookup.Remove(id);
@@ -90,13 +79,7 @@ public sealed class CosXRefTable : IEnumerable<CosXRef>
         return false;
     }
 
-    public IEnumerator<CosXRef> GetEnumerator()
-    {
-        return _references.GetEnumerator();
-    }
+    public IEnumerator<ICosXRef> GetEnumerator() => _references.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

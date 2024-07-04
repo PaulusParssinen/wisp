@@ -120,7 +120,7 @@ public sealed class FlateFilter : IFilter
                     else if (filter == 2)
                     {
                         // UP
-                        if (previous != null)
+                        if (previous is not null)
                         {
                             for (var i = 0; i < bytesPerRow; i++)
                             {

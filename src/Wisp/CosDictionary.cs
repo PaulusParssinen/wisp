@@ -67,7 +67,7 @@ public sealed partial class CosDictionary : ICosPrimitive, IEnumerable<KeyValueP
 
         // Setting the value to null
         // removes the pair from the dictionary
-        if (value == null)
+        if (value is null)
         {
             _dictionary.Remove(key);
             return;
@@ -146,7 +146,7 @@ public static class PdfDictionaryExtensions
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        if (value == null)
+        if (value is null)
         {
             throw new WispException(
                 "Cannot set required key '{key}' to null");

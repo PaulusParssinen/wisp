@@ -1,29 +1,10 @@
 namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosReal : ICosPrimitive
+[CosPrimitive]
+public sealed partial class CosReal(double value) : ICosPrimitive
 {
-    public double Value { get; }
+    public double Value { get; } = value;
 
-    public CosReal(double value)
-    {
-        Value = value;
-    }
-
-    [DebuggerStepThrough]
-    public void Accept<TContext>(ICosVisitor<TContext> visitor, TContext context)
-    {
-        visitor.VisitReal(this, context);
-    }
-
-    [DebuggerStepThrough]
-    public TResult Accept<TContext, TResult>(ICosVisitor<TContext, TResult> visitor, TContext context)
-    {
-        return visitor.VisitReal(this, context);
-    }
-
-    public override string ToString()
-    {
-        return $"[Real] {Value.ToString(CultureInfo.InvariantCulture)}";
-    }
+    public override string ToString() => $"[Real] {Value.ToString(CultureInfo.InvariantCulture)}";
 }
