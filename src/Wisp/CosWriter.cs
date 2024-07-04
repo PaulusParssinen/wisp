@@ -97,14 +97,14 @@ public sealed class CosWriter : IDisposable
         public override void VisitDictionary(CosDictionary obj, Context context)
         {
             context.Writer.WriteBytes("<<"u8);
-            context.Writer.WriteByte('\n');
+            context.Writer.WriteByte(' ');
 
             foreach (var (key, value) in obj)
             {
                 key.Accept(this, context);
                 context.Writer.WriteByte(' ');
                 value.Accept(this, context);
-                context.Writer.WriteByte('\n');
+                context.Writer.WriteByte(' ');
             }
 
             context.Writer.WriteBytes(">>"u8);
