@@ -10,6 +10,7 @@ public static class CosDocumentReader
 
         // TODO:
         var ms = new MemoryStream();
+        stream.Seek(0, SeekOrigin.Begin);
         stream.CopyTo(ms);
         var streamBytes = ms.ToArray();
 

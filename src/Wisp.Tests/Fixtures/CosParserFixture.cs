@@ -1,4 +1,4 @@
-namespace Wisp.Tests.Infrastructure.Fixtures;
+namespace Wisp.Tests.Fixtures;
 
 public static class CosParserFixture
 {

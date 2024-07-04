@@ -17,8 +17,8 @@ internal sealed class CosObjectCache(CosXRefTable table, CosObjectResolver? reso
         if (!shouldInvalidate)
         {
             // Try get the object from caches
-            if (!_objects.TryGetValue(id, out obj))
-                return false;
+            if (_objects.TryGetValue(id, out obj))
+                return true;
         }
 
         // Should we try to resolve the object from the PDF document stream?

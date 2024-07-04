@@ -1,25 +1,16 @@
 namespace Wisp;
 
-public sealed class CosToken
+public sealed class CosToken(CosTokenKind kind, string? text = null, byte[]? lexeme = null)
 {
-    public CosTokenKind Kind { get; }
-    public string? Text { get; }
-    public byte[]? Lexeme { get; }
-
-    public CosToken(CosTokenKind kind, string? text = null, byte[]? lexeme = null)
-    {
-        Kind = kind;
-        Text = text;
-        Lexeme = lexeme;
-    }
+    public CosTokenKind Kind { get; } = kind;
+    public string? Text { get; } = text;
+    public byte[]? Lexeme { get; } = lexeme;
 }
 
 public static class CosTokenExtensions
 {
     public static int ParseInt32(this CosToken token)
     {
-        ArgumentNullException.ThrowIfNull(token);
-
         if (token.Kind is not CosTokenKind.Integer)
         {
             throw new WispException("Cannot parse token since it's not an integer.");
@@ -30,8 +21,6 @@ public static class CosTokenExtensions
 
     public static double ParseDouble(this CosToken token)
     {
-        ArgumentNullException.ThrowIfNull(token);
-
         if (token.Kind is not CosTokenKind.Real)
         {
             throw new WispException("Cannot parse token since it's not a real number.");

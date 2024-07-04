@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wisp.Tests.Infrastructure.Fixtures;
+namespace Wisp.Tests.Fixtures;
 
 public sealed class CosWriterFixture
 {

@@ -4,7 +4,7 @@ namespace Wisp;
 
 public sealed class CosLexer
 {
-    private static readonly SearchValues<byte> _lowerAsciiLetters = SearchValues.Create("abcdefghijklmnopqrstuvwxyz"u8);
+    private static readonly SearchValues<byte> _asciiLetters = SearchValues.Create("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
     private readonly byte[] _buffer;
     private int _position;
@@ -37,7 +37,7 @@ public sealed class CosLexer
         }
 
         _buffer.AsSpan(_position, buffer.Length).CopyTo(buffer);
-        _position += _buffer.Length;
+        _position += buffer.Length;
     }
 
     public long Seek(long offset, SeekOrigin origin)
@@ -454,7 +454,7 @@ public sealed class CosLexer
 
     private CosToken ReadKeyword()
     {
-        int endOfKeywordIndex = CurrentSpan.IndexOfAnyExceptInRange((byte)'a', (byte)'z');
+        int endOfKeywordIndex = CurrentSpan.IndexOfAnyExcept(_asciiLetters);
 
         var keywordSpan = CurrentSpan.Slice(0, endOfKeywordIndex);
         _position += endOfKeywordIndex;

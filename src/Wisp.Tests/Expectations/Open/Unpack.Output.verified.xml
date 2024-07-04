@@ -32,7 +32,7 @@
   </XRefTable>
   <!--Trailer-->
   <Trailer>
-    <Trailer Count="9">
+    <Dictionary Count="9">
       <Item Key="Length">80</Item>
       <Item Key="ID">
         <Array Count="2">
@@ -74,7 +74,7 @@
         </Array>
       </Item>
       <Item Key="Filter">/FlateDecode</Item>
-    </Trailer>
+    </Dictionary>
   </Trailer>
   <!--Objects-->
   <Objects>

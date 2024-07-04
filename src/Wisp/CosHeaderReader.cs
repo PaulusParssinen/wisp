@@ -18,7 +18,7 @@ public sealed class CosHeaderReader
                 throw new WispException("PDF file is missing header");
             }
 
-            return new Version(headerBuffer[5], headerBuffer[7]);
+            return new Version(headerBuffer[5] - (byte)'0', headerBuffer[7] - (byte)'0');
         }
         finally
         {
