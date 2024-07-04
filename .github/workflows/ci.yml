@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: CI
 
 on:
   push:
@@ -15,19 +15,17 @@ env:
 jobs:
   build:
     name: Build
-    if: "!contains(github.event.head_commit.message, 'skip-ci')"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
-
-      - name: Build
-        shell: bash
-        run: |
-          cd src
-          dotnet build
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore
+      run: dotnet restore -v normal
+    - name: Build
+      run: dotnet build -c Release --no-restore -v normal
+    - name: Test
+      run: dotnet test -c Release --no-restore --no-build -v normal
