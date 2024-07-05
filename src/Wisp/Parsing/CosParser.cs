@@ -120,52 +120,46 @@ public sealed class CosParser
 
     private ICosPrimitive ParseStringLiteral()
     {
-        static bool DecodeString(
-            byte[] bytes,
-            [NotNullWhen(true)] out string? decoded,
+        static bool TryDecodeString(
+            ReadOnlySpan<byte> input,
+            [NotNullWhen(true)] out string? value,
             [NotNullWhen(true)] out CosStringEncoding? encoding)
         {
-            switch (bytes)
+            if (input.StartsWith([(byte)0xFE, (byte)0xFF])) // Big-endian
             {
-                // Big endian unicode?
-                case [0xFE, 0xFF, ..]:
-                    decoded = Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2);
-                    encoding = CosStringEncoding.BigEndianUnicode;
-                    return true;
-
-                // Little endian unicode?
-                case [0xFF, 0xFE, ..]:
-                    decoded = Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2);
-                    encoding = CosStringEncoding.Unicode;
-                    return true;
+                value = Encoding.BigEndianUnicode.GetString(input.Slice(2));
+                encoding = CosStringEncoding.BigEndianUnicode;
+            }
+            else if (input.StartsWith([(byte)0xFF, (byte)0xFE])) // Little-endian
+            {
+                value = Encoding.Unicode.GetString(input.Slice(2));
+                encoding = CosStringEncoding.Unicode;
+            }
+            else
+            {
+                // Treat everything else as ASCII.
+                value = Encoding.ASCII.GetString(input);
+                encoding = CosStringEncoding.Ascii;
             }
 
-            // Treat everything else as ASCII.
-            decoded = Encoding.ASCII.GetString(bytes);
-            encoding = CosStringEncoding.Ascii;
             return true;
         }
 
         var token = _lexer.Expect(CosTokenKind.StringLiteral);
         if (token.Lexeme is null)
         {
-            throw new WispParserException(
-                this, "String literal token had no byte content");
+            throw new WispParserException(this, "String literal token had no byte content");
         }
 
-        if (!DecodeString(token.Lexeme, out var decoded, out var encoding))
+        if (!TryDecodeString(token.Lexeme, out var decoded, out var encoding))
         {
-            throw new WispParserException(
-                this, "Could not decode PDF string");
+            throw new WispParserException(this, "Could not decode PDF string");
         }
 
-        // Is the string really a date?
-        if (decoded.StartsWith("D:"))
+        // TODO: outline D: prefix check or make date parsing explicit.
+        if (CosDate.TryParse(decoded, out var date))
         {
-            if (CosDate.TryParse(decoded[2..], out var date))
-            {
-                return new CosDate(date.Value);
-            }
+            return new CosDate(date.Value);
         }
 
         return new CosString(decoded, encoding.Value);
@@ -262,7 +256,7 @@ public sealed class CosParser
             return null;
         }
 
-        var length = metadata.Get<CosInteger>(CosNames.Length) ?? 
+        var length = metadata.Get<CosInteger>(CosNames.Length) ??
             throw new WispParserException(this, "Stream did not have a specified length");
 
         // Read the stream data

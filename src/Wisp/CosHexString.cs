@@ -10,7 +10,7 @@ public sealed partial class CosHexString : ICosPrimitive
     {
         Value = value;
     }
-    
+
     /// <inheritdoc/>
     public override string ToString() => $"[Hex] {Convert.ToHexString(Value)}";
 }

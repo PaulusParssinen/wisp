@@ -61,13 +61,7 @@ public sealed class CosWriterTests
         });
 
         // Then
-        fixture.Result.ShouldBe(
-            """
-            <<
-            /Size 40
-            /Root 25 0 R
-            >>
-            """);
+        fixture.Result.ShouldBe("<< /Size 40 /Root 25 0 R >>");
     }
 
     [Fact]

@@ -60,9 +60,9 @@ internal sealed class CosObjectResolver : IDisposable
                 }
 
                 // Get the object within the stream
-                var objectStreamItem = objectStream.GetObjectByIndex(cache, streamXref.Index) 
+                var objectStreamItem = objectStream.GetObjectByIndex(cache, streamXref.Index)
                     ?? throw new WispObjectResolveException(_parser, $"Could not get object in object stream at index {streamXref.Index}");
-                
+
                 owner = ownerObject;
                 obj = objectStreamItem;
                 return true;

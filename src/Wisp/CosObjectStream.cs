@@ -43,7 +43,7 @@ public sealed partial class CosObjectStream : ICosPrimitive
         }
 
         var bytes = _stream.GetUnfilteredData() ?? throw new WispException("Stream contained no data");
-        
+
         var parser = new CosParser(bytes, isStreamObject: true);
         EnsureOffsetsHaveBeenPopulated(parser);
 
@@ -130,9 +130,9 @@ public sealed partial class CosObjectStream : ICosPrimitive
     {
         if (_unpacked) return;
 
-        var objectOffset = _stream.Dictionary.Get<CosInteger>(CosNames.First) 
+        var objectOffset = _stream.Dictionary.Get<CosInteger>(CosNames.First)
             ?? throw new WispException("Object stream is missing /First parameter");
-        
+
         for (var i = 0; i < N; i++)
         {
             if (!parser.CanRead)

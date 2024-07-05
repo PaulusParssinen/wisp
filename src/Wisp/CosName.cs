@@ -16,7 +16,7 @@ public sealed partial class CosName : ICosPrimitive, IEquatable<CosName>
     public bool Equals(CosName? other) => CosNameComparer.Shared.Equals(this, other);
 
     public override int GetHashCode() => CosNameComparer.Shared.GetHashCode(this);
-    
+
     /// <inheritdoc/>
     public override string ToString() => $"[Name] {Value}";
 }

@@ -181,7 +181,7 @@ public static class CosSerializer
 
         public override void VisitDate(CosDate obj, Context context)
         {
-            context.WriteString(obj.Value.ToString(CultureInfo.InvariantCulture));
+            context.WriteString(string.Create(CultureInfo.InvariantCulture, $"D:{obj.Value:yyyyMMddHHmmss}Z"));
         }
 
         public override void VisitName(CosName obj, Context context)

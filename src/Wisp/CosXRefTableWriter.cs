@@ -45,9 +45,9 @@ internal static class CosXRefTableWriter
         var encoded = new List<ICosXRef>();
         foreach (var id in ids)
         {
-            var xref = xRefTable.GetXRef(id) ?? 
+            var xref = xRefTable.GetXRef(id) ??
                 throw new WispException($"Could not find xref for object {id}");
-            
+
             xref = xref.CreateCopy();
             if (xref is CosIndirectXRef indirect)
             {

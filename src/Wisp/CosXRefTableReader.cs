@@ -200,7 +200,7 @@ public static class CosXRefTableReader
 
         var entries = new List<(int First, int Second, int Third)>();
         var data = new ReadOnlySpan<byte>(stream.GetUnfilteredData());
-        
+
         while (!data.IsEmpty)
         {
             var first = Unpack(ref data, sizes[0]);

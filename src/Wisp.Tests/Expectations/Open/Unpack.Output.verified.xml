@@ -298,9 +298,9 @@
     <!--Object: 23:0-->
     <Object Id="23:0" Cached="True">
       <Dictionary Count="5">
-        <Item Key="CreationDate">02/27/2024 22:02:31 +01:00</Item>
+        <Item Key="CreationDate">D:20240227220231Z</Item>
         <Item Key="Creator">Adobe Acrobat 23.0</Item>
-        <Item Key="ModDate">02/27/2024 22:02:40 +01:00</Item>
+        <Item Key="ModDate">D:20240227220240Z</Item>
         <Item Key="Producer">Acrobat Web Capture 15.0</Item>
         <Item Key="Title">PDF_Test.txt</Item>
       </Dictionary>

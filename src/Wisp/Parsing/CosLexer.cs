@@ -474,7 +474,7 @@ public sealed class CosLexer
             4 when keywordSpan.SequenceEqual("xref"u8) => new CosToken(CosTokenKind.XRef),
             1 when keywordSpan.SequenceEqual("f"u8) => new CosToken(CosTokenKind.XRefFree),
             1 when keywordSpan.SequenceEqual("n"u8) => new CosToken(CosTokenKind.XRefIndirect),
-            
+
             _ => throw new WispLexerException(this, $"Unknown token"),
         };
     }

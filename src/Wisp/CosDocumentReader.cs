@@ -40,7 +40,7 @@ public static class CosDocumentReader
 
             foreach (var group in streams)
             {
-                if (objects.TryGet(group.Key, CosResolveFlags.NoCache, out var cosObject) && 
+                if (objects.TryGet(group.Key, CosResolveFlags.NoCache, out var cosObject) &&
                     cosObject.Object is CosObjectStream objectStream)
                 {
                     var objectIds = objectStream.GetObjectIds();
