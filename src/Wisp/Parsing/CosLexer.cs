@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Text;
 
 namespace Wisp;
 
@@ -251,9 +252,12 @@ public sealed class CosLexer
             if (current == '#')
             {
                 Consume('#');
-
                 ReadBytes(hexBuffer);
-                accumulator.Append(HexUtility.FromHex((char)hexBuffer[0], (char)hexBuffer[1]));
+
+                if (!Utf8Parser.TryParse(hexBuffer, out byte value, out _, 'x'))
+                    throw new WispLexerException(this, "Invalid hex input");
+
+                accumulator.Append((char)value);
             }
             else
             {
@@ -348,7 +352,7 @@ public sealed class CosLexer
             }
 
             var current = PeekChar();
-            if (!char.IsLetter(current) && !char.IsDigit(current))
+            if (!char.IsLetterOrDigit(current))
             {
                 if (current == '>')
                 {

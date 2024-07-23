@@ -1,5 +1,16 @@
 namespace Wisp;
 
+/// <summary>
+/// Represents a Cos dictionary that is an associative table whose elements are pairs of objects:
+/// <list type="bullet">
+/// <item>
+/// The first element of a pair is the key, which is always <see cref="CosName"> a name object.</see>
+/// </item>
+/// <item>
+/// The second element is the Cos object representing the value.
+/// </item>
+/// </list>
+/// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
 [CosPrimitive]
 public sealed partial class CosDictionary : ICosPrimitive, IEnumerable<KeyValuePair<CosName, ICosPrimitive>>

@@ -1,5 +1,8 @@
 namespace Wisp;
 
+/// <summary>
+/// 
+/// </summary>
 public sealed class CosDocument : IDisposable
 {
     private readonly CosObjectResolver? _resolver;

@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 namespace Wisp;
 
 public static class CosXRefTableReader
@@ -97,7 +99,7 @@ public static class CosXRefTableReader
             else if (entry.First == 1)
             {
                 // Indirect object
-                var generation = entry.Third;
+                var generation = (int)entry.Third;
                 var offset = entry.Second;
                 table.Add(new CosIndirectXRef(
                     new CosObjectId(id, generation),
@@ -106,8 +108,8 @@ public static class CosXRefTableReader
             else if (entry.First == 2)
             {
                 // Indirect object in stream
-                var streamId = entry.Second;
-                var streamIndex = entry.Third;
+                var streamId = (int)entry.Second;
+                var streamIndex = (int)entry.Third;
                 table.Add(new CosStreamXRef(
                     new CosObjectId(id, 0),
                     new CosObjectId(streamId, 0),
@@ -115,17 +117,16 @@ public static class CosXRefTableReader
             }
             else
             {
-                // No idea what this is
-                // Corrupted data?
-                throw new WispException(
-                    "Unknown xref stream object type");
+                // PDF32000-1:2008, 7.5.8.3. ("Cross-Reference Stream Data")
+                // Any other value shall be interpreted as a reference to the null object, ..
+                throw new WispException("Unknown xref stream object type");
             }
         }
 
         return (table, stream.Dictionary);
     }
 
-    private static int[] GetFieldSizes(CosStream stream)
+    private static (int, int, int) GetFieldSizes(CosStream stream)
     {
         var sizes = stream.Dictionary.Get<CosArray>(CosNames.W) ?? throw new WispException("XRef Stream is missing /W array");
         if (sizes.Count != 3)
@@ -133,12 +134,12 @@ public static class CosXRefTableReader
             throw new WispException($"Expected 3 items in /W array in XRef stream. Found {sizes.Count}");
         }
 
-        var w = new int[3];
-        w[0] = sizes.GetAt<CosInteger>(0)?.IntValue ?? 1;
-        w[1] = sizes.GetAt<CosInteger>(1)?.IntValue ?? 0;
-        w[2] = sizes.GetAt<CosInteger>(2)?.IntValue ?? 0;
+        (int, int, int) w = new(
+            sizes.GetAt<CosInteger>(0)?.IntValue ?? 1,
+            sizes.GetAt<CosInteger>(1)?.IntValue ?? 0,
+            sizes.GetAt<CosInteger>(2)?.IntValue ?? 0);
 
-        if (w[0] < 0 || w[1] < 0 || w[2] < 0)
+        if (w.Item1 < 0 || w.Item2 < 0 || w.Item3 < 0)
         {
             throw new WispException("/W array in XRef stream is invalid");
         }
@@ -149,15 +150,11 @@ public static class CosXRefTableReader
     private static Queue<int> GetObjectIds(CosStream stream)
     {
         var size = stream.Dictionary.Get<CosInteger>(CosNames.Size)?.Value ?? throw new WispException("Stream xref table did not have size");
-        var indexArray = stream.Dictionary.Get<CosArray>(CosNames.Index);
-        if (indexArray is null)
-        {
-            indexArray =
+        var indexArray = stream.Dictionary.Get<CosArray>(CosNames.Index) ??
             [
                 new CosInteger(0),
                 new CosInteger(size),
             ];
-        }
 
         var indices = new List<int>();
         foreach (var item in indexArray)
@@ -171,13 +168,13 @@ public static class CosXRefTableReader
             indices.Add((int)arrayInteger.Value);
         }
 
-        if (indices.Count % 2 != 0)
+        if (int.IsOddInteger(indices.Count))
         {
             throw new WispException(
                 "Encountered malformed index array (unbalanced)");
         }
 
-        var result = new List<int>();
+        var result = new List<int>(indices.Count);
         for (var i = 0; i < indices.Count; i += 2)
         {
             var start = indices[i];
@@ -189,41 +186,38 @@ public static class CosXRefTableReader
         return new Queue<int>(result);
     }
 
-    private static List<(int First, int Second, int Third)> ReadEntries(CosStream stream, int[] sizes)
+    private static List<(uint First, uint Second, uint Third)> ReadEntries(CosStream stream, (int, int, int) fieldSizes)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        if (sizes.Length != 3)
-        {
-            throw new WispException("Invalid sizes");
-        }
-
-        var entries = new List<(int First, int Second, int Third)>();
+        var entries = new List<(uint First, uint Second, uint Third)>();
         var data = new ReadOnlySpan<byte>(stream.GetUnfilteredData());
 
         while (!data.IsEmpty)
         {
-            var first = Unpack(ref data, sizes[0]);
-            var second = Unpack(ref data, sizes[1]);
-            var third = Unpack(ref data, sizes[2]);
+            var first = ReadVariableLengthUInt32(ref data, fieldSizes.Item1);
+            var second = ReadVariableLengthUInt32(ref data, fieldSizes.Item2);
+            var third = ReadVariableLengthUInt32(ref data, fieldSizes.Item3);
 
             entries.Add((first, second, third));
         }
 
         return entries;
 
-        // Unpacks an integer using n bytes in the stream
-        static int Unpack(ref ReadOnlySpan<byte> data, int length)
+        // Decodes an unsigned integer consisting of n bytes in big-endian format as an unsigned 32-bit integer.
+        static uint ReadVariableLengthUInt32(ref ReadOnlySpan<byte> data, int length)
         {
-            int accumulated = 0;
-            for (var i = 0; i < length; i++)
+            uint value = length switch
             {
-                accumulated |= data[i] << 8 * (length - i - 1);
-            }
+                1 => data[0],
+                2 => BinaryPrimitives.ReadUInt16BigEndian(data),
+                // TODO: Is 24-bit spec. compliant?
+                4 => BinaryPrimitives.ReadUInt32BigEndian(data),
+                _ => throw new WispException("Encountered unexpected field size")
+            };
 
             data = data.Slice(length);
-
-            return accumulated;
+            return value;
         }
     }
 }

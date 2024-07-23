@@ -8,13 +8,10 @@ public interface ICosXRef
 }
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosIndirectXRef : ICosXRef
+public sealed class CosIndirectXRef(CosObjectId id) : ICosXRef
 {
-    public CosObjectId Id { get; }
+    public CosObjectId Id { get; } = id;
     public long? Position { get; set; }
-
-
-    public CosIndirectXRef(CosObjectId id) => Id = id;
 
     public CosIndirectXRef(CosObjectId id, long position)
         : this(id)
@@ -24,38 +21,24 @@ public sealed class CosIndirectXRef : ICosXRef
 
     public ICosXRef CreateCopy()
     {
-        if (Position is not null)
-        {
-            return new CosIndirectXRef(Id, Position.Value);
-        }
-        else
-        {
-            return new CosIndirectXRef(Id);
-        }
+        return Position is not null ? 
+            new CosIndirectXRef(Id, Position.Value) : new CosIndirectXRef(Id);
     }
 
     public override string ToString() => $"[XRef] {Id.Number}:{Id.Generation} Position = {Position}";
 }
 
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class CosStreamXRef : ICosXRef
+public sealed class CosStreamXRef(CosObjectId id, CosObjectId streamId, int index) : ICosXRef
 {
-    public CosObjectId Id { get; }
-    public CosObjectId StreamId { get; }
-    public int Index { get; }
-
-    public CosStreamXRef(CosObjectId id, CosObjectId streamId, int index)
-    {
-        Id = id;
-        StreamId = streamId;
-        Index = index;
-    }
+    public CosObjectId Id { get; } = id;
+    public CosObjectId StreamId { get; } = streamId;
+    public int Index { get; } = index;
 
     public ICosXRef CreateCopy() => new CosStreamXRef(Id, StreamId, Index);
 
     public override string ToString()
     {
-        var streamId = $"{StreamId.Number}:{StreamId.Generation}";
-        return $"[XRef] {Id.Number}:{Id.Generation} Stream = {streamId}, Index = {Index}";
+        return $"[XRef] {Id.Number}:{Id.Generation} Stream = {StreamId.Number}:{StreamId.Generation}, Index = {Index}";
     }
 }

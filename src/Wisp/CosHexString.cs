@@ -2,14 +2,9 @@ namespace Wisp;
 
 [DebuggerDisplay("{ToString(),nq}")]
 [CosPrimitive]
-public sealed partial class CosHexString : ICosPrimitive
+public sealed partial class CosHexString(byte[] value) : ICosPrimitive
 {
-    public byte[] Value { get; }
-
-    public CosHexString(byte[] value)
-    {
-        Value = value;
-    }
+    public byte[] Value { get; } = value;
 
     /// <inheritdoc/>
     public override string ToString() => $"[Hex] {Convert.ToHexString(Value)}";
